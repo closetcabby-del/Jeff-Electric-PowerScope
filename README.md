@@ -8,6 +8,9 @@ A playable, mobile-first virtual Houston home that helps homeowners understand h
 - Houston scenario presets: 100°F afternoon, family dinner, laundry day, thunderstorm, hurricane preparation and new-EV night
 - 1975, 1995, 2015 and Today time-machine views
 - Simplified electrical X-ray with animated power pathways
+- Non-blocking “Something changed” cues that let the homeowner choose when to inspect an event
+- Progressive control tabs that reveal Houston moments, equipment and the time machine one at a time
+- Plain-language active-system count rather than a safety-like numeric score
 - “Wait—did you see that?” observation moments with homeowner-safe next steps
 - Personalized Home Power Story summarizing equipment and recognized situations
 - Keyboard-accessible controls, native safety dialog and reduced-motion support

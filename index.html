@@ -11,9 +11,9 @@
   <meta property="og:image" content="assets/social-card.svg">
   <title>Home Power Lab | Jeff Electric</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=power-lab-1">
-  <script src="data.js?v=power-lab-1" defer></script>
-  <script src="app.js?v=power-lab-1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=power-lab-2">
+  <script src="data.js?v=power-lab-2" defer></script>
+  <script src="app.js?v=power-lab-2" defer></script>
 </head>
 <body class="lab-mode">
   <a class="skip-link" href="#power-lab">Skip to Home Power Lab</a>
@@ -37,7 +37,7 @@
     <section id="lab-stage" class="lab-stage" hidden aria-live="polite">
       <div class="lab-status">
         <div><span id="lab-scenario-label">YOUR EVENING</span><strong id="lab-message">Tap equipment to build your evening.</strong></div>
-        <div class="activity-readout"><span>ILLUSTRATIVE ACTIVITY</span><strong id="activity-value">0</strong><small>/ 100</small></div>
+        <div class="activity-readout"><span>HOUSE STATUS</span><strong id="activity-value">0</strong><small id="activity-unit">systems on</small></div>
         <button id="finish-lab" type="button">My Power Story →</button>
       </div>
 
@@ -60,16 +60,22 @@
         </svg>
         <div id="era-ghosts" class="era-ghosts" aria-hidden="true"></div>
         <div id="device-layer" class="device-layer"></div>
+        <button id="event-cue" class="event-cue" type="button" hidden><span aria-hidden="true">!</span><strong>Something changed</strong><small>Tap to notice</small></button>
         <button id="xray-toggle" class="xray-toggle" type="button" aria-pressed="false"><span aria-hidden="true">⌁</span> See behind the walls</button>
         <div class="lab-caption"><i></i><span id="lab-caption">Electricity enters through the service equipment and branches throughout the home.</span></div>
       </div>
 
       <section class="lab-console" aria-label="Home Power Lab controls">
-        <div class="console-row scenario-row">
+        <nav class="console-tabs" aria-label="Experiment controls">
+          <button type="button" data-console-tab="moments" aria-selected="true">Houston moments</button>
+          <button type="button" data-console-tab="equipment" aria-selected="false">Equipment</button>
+          <button type="button" data-console-tab="time" aria-selected="false">Time machine</button>
+        </nav>
+        <div class="console-row scenario-row" data-console-panel="moments">
           <div class="console-label"><span>01</span><strong>Choose a Houston moment</strong></div>
           <div id="scenario-buttons" class="scenario-buttons"></div>
         </div>
-        <div class="console-row time-row">
+        <div class="console-row time-row" data-console-panel="time" hidden>
           <div class="console-label"><span>02</span><strong>Move through time</strong></div>
           <div class="time-control">
             <input id="era-slider" type="range" min="0" max="3" step="1" value="3" aria-label="Home electrical era">
@@ -77,12 +83,12 @@
           </div>
           <p id="era-copy"></p>
         </div>
-        <div class="console-row equipment-row">
+        <div class="console-row equipment-row" data-console-panel="equipment" hidden>
           <div class="console-label"><span>03</span><strong>Build your evening</strong></div>
           <div id="equipment-buttons" class="equipment-buttons"></div>
           <button id="reset-lab" class="console-reset" type="button">Reset</button>
         </div>
-        <p class="lab-method">Activity points and animation are illustrative educational signals—not measurements, an NEC load calculation, service sizing, or a determination that any home is safe or unsafe.</p>
+        <p class="lab-method">Choose a preset or build your own evening. The experience is illustrative—not a measurement, load calculation, service sizing, or safety determination.</p>
       </section>
 
       <aside id="notice-card" class="notice-card" hidden aria-labelledby="notice-title">
@@ -112,7 +118,7 @@
         <p id="story-summary" class="story-summary"></p>
         <div class="story-house">
           <div id="story-devices" class="story-devices"></div>
-          <div class="story-core"><span>ϟ</span><strong id="story-activity">0</strong><small>illustrative activity</small></div>
+          <div class="story-core"><span>ϟ</span><strong id="story-activity">0</strong><small>systems active</small></div>
         </div>
         <div id="story-observations" class="story-observations"></div>
         <div class="story-actions">

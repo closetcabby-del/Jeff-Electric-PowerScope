@@ -8,6 +8,7 @@
   let selectedScenario = null;
   let currentEvent = null;
   let eventSource = "";
+  let pendingEvent = null;
   const seenEvents = new Set();
 
   function setView(view) {
@@ -19,7 +20,7 @@
   function renderEquipment() {
     $("#equipment-buttons").innerHTML = D.equipment.map(item => `
       <button type="button" data-device="${item.id}" aria-pressed="${active.has(item.id)}">
-        <span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong><small>+${item.points}</small>
+        <span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong>
       </button>`).join("");
     $("#device-layer").innerHTML = D.equipment.map(item => `
       <button type="button" class="lab-device" data-device="${item.id}" aria-pressed="${active.has(item.id)}"
@@ -60,7 +61,8 @@
 
   function updateHouse() {
     const score = activityScore();
-    $("#activity-value").textContent = score;
+    $("#activity-value").textContent = active.size;
+    $("#activity-unit").textContent = active.size === 1 ? "system on" : "systems on";
     $("#lab-house").style.setProperty("--activity",`${score}%`);
     document.querySelectorAll("[data-device]").forEach(button => {
       button.setAttribute("aria-pressed",String(active.has(button.dataset.device)));
@@ -113,8 +115,18 @@
   function triggerEvent(eventId,source) {
     if(seenEvents.has(eventId)) return;
     seenEvents.add(eventId);
-    currentEvent = eventId;
+    pendingEvent = eventId;
     eventSource = source;
+    $("#event-cue").hidden = false;
+    $("#event-cue").querySelector("small").textContent = eventId === "activity" ? "Major systems overlap" : "Tap to notice";
+    $("#lab-house").dataset.event = eventId;
+  }
+
+  function openPendingEvent() {
+    if(!pendingEvent) return;
+    currentEvent = pendingEvent;
+    pendingEvent = null;
+    const eventId = currentEvent;
     const event = D.events[eventId];
     $("#notice-title").textContent = event.title;
     $("#notice-copy").textContent = event.copy;
@@ -122,6 +134,7 @@
     $("#notice-guidance").hidden = true;
     $("#notice-card").hidden = false;
     $("#lab-house").dataset.event = eventId;
+    $("#event-cue").hidden = true;
     $("#notice-close").focus();
   }
 
@@ -143,10 +156,9 @@
   }
 
   function buildStory() {
-    const score = activityScore();
     const era = D.eras[eraIndex];
     const items = D.equipment.filter(item => active.has(item.id));
-    $("#story-activity").textContent = score;
+    $("#story-activity").textContent = items.length;
     $("#story-summary").textContent = `${era.year} view · ${items.length} active system${items.length === 1 ? "" : "s"} · ${selectedScenario ? selectedScenario.name : "your custom evening"}. These are the conditions you explored—not findings about a property.`;
     $("#story-devices").innerHTML = items.length ? items.map(item => `<span><i>${item.icon}</i>${item.name}</span>`).join("") : "<p>No equipment was left active. Return to the lab to build an evening.</p>";
     $("#story-observations").innerHTML = observations.length ? observations.map(item => `
@@ -162,11 +174,13 @@
     active.clear();
     observations = [];
     selectedScenario = null;
+    pendingEvent = null;
     seenEvents.clear();
     $("#era-slider").value = "3";
     document.querySelectorAll("[data-scenario]").forEach(button => button.setAttribute("aria-pressed","false"));
     $("#lab-scenario-label").textContent = "YOUR EVENING";
     $("#lab-message").textContent = "Tap equipment to build your evening.";
+    $("#event-cue").hidden = true;
     setEra(3);
     closeNotice();
   }
@@ -193,6 +207,13 @@
     $("#notice-close").addEventListener("click",closeNotice);
     $("#notice-continue").addEventListener("click",closeNotice);
     $("#notice-options").querySelectorAll("button").forEach(button => button.addEventListener("click",() => answerNotice(button.dataset.answer)));
+    $("#event-cue").addEventListener("click",openPendingEvent);
+    document.querySelectorAll("[data-console-tab]").forEach(button => {
+      button.addEventListener("click",() => {
+        document.querySelectorAll("[data-console-tab]").forEach(tab => tab.setAttribute("aria-selected",String(tab === button)));
+        document.querySelectorAll("[data-console-panel]").forEach(panel => panel.hidden = panel.dataset.consolePanel !== button.dataset.consoleTab);
+      });
+    });
     $("#finish-lab").addEventListener("click",buildStory);
     $("#back-to-lab").addEventListener("click",() => setView("#lab-stage"));
     $("#restart-lab").addEventListener("click",() => {resetLab();setView("#lab-stage");});
