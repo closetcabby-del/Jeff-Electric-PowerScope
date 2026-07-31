@@ -3,106 +3,110 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#08090b">
-  <meta name="description" content="Take a safe, interactive electrical walkthrough of a virtual home with Jeff Electric HomeScope.">
-  <meta property="og:title" content="Jeff Electric HomeScope">
-  <meta property="og:description" content="A homeowner’s interactive guide to the electrical equipment around the home.">
+  <meta name="theme-color" content="#050608">
+  <meta name="description" content="Enter a cinematic virtual home and learn to recognize electrical signals safely with Jeff Electric.">
+  <meta property="og:title" content="Home Signals | Jeff Electric">
+  <meta property="og:description" content="Your home speaks in signals. Learn what they may mean—and what to do next.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/social-card.svg">
-  <title>HomeScope | Jeff Electric</title>
+  <title>Home Signals | Jeff Electric</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=virtual-home-3">
-  <script src="data.js?v=virtual-home-3" defer></script>
-  <script src="app.js?v=virtual-home-3" defer></script>
+  <link rel="stylesheet" href="styles.css?v=home-signals-1">
+  <script src="data.js?v=home-signals-1" defer></script>
+  <script src="app.js?v=home-signals-1" defer></script>
 </head>
-<body>
-  <a class="skip-link" href="#room-nav">Skip to room navigation</a>
-  <main class="home-app">
-    <header class="topbar glass">
-      <a class="brand" href="./" aria-label="Jeff Electric HomeScope home">
-        <span class="brand-bolt" aria-hidden="true">ϟ</span>
-        <span><strong>JEFF ELECTRIC</strong><small>HOMESCOPE / SAFE WALKTHROUGH</small></span>
+<body class="story-mode">
+  <a class="skip-link" href="#story">Skip to the walkthrough</a>
+  <main id="story" class="signal-app">
+    <header class="signal-header">
+      <a class="signal-brand" href="./" aria-label="Jeff Electric Home Signals home">
+        <span aria-hidden="true">ϟ</span>
+        <strong>JEFF ELECTRIC</strong>
       </a>
-      <div class="top-actions">
-        <button id="safety-open" class="quiet-button" type="button">Safety rules</button>
-        <button id="summary-open" class="summary-button" type="button"><span id="reviewed-count">0</span> reviewed</button>
-      </div>
+      <button id="safety-open" class="signal-text-button" type="button">Safety</button>
     </header>
 
-    <section class="intro-panel glass">
-      <p class="eyebrow">A HOMEOWNER’S INTERACTIVE GUIDE</p>
-      <h1>Walk through your home.</h1>
-      <p>Choose a room, tap the glowing objects and learn what to notice—without tools, disassembly or live testing.</p>
-      <div class="safety-strip"><span aria-hidden="true">✓</span> Observe only. Never open covers or touch wiring.</div>
+    <section id="welcome" class="welcome-screen" aria-labelledby="welcome-title">
+      <div class="room-scene welcome-house" aria-hidden="true"></div>
+      <div class="welcome-copy">
+        <p class="signal-eyebrow">AN INTERACTIVE HOMEOWNER EXPERIENCE</p>
+        <h1 id="welcome-title">Your home speaks<br>in <em>signals.</em></h1>
+        <p>Lights dim. Breakers trip. Outlets feel different. Walk through a virtual Houston home and learn what those moments may be telling you.</p>
+        <button id="enter-home" class="enter-button" type="button">
+          <span>Enter the house</span><span aria-hidden="true">→</span>
+        </button>
+        <small>About 3 minutes · Observe only · No tools</small>
+      </div>
+      <div class="welcome-cue" aria-hidden="true"><i></i><span>HOUSTON / NIGHT</span></div>
     </section>
 
-    <nav class="room-nav glass" id="room-nav" aria-label="Virtual home rooms"></nav>
-
-    <section class="scene-shell" aria-live="polite">
-      <div class="scene-heading">
-        <div><p class="eyebrow" id="room-step">START HERE</p><h2 id="room-title">Your virtual home</h2><button id="overview-button" type="button">View full house</button></div>
-        <p id="room-intro"></p>
+    <section id="walkthrough" class="walkthrough" hidden aria-live="polite">
+      <div class="story-hud">
+        <div><span id="step-label">SIGNAL 01</span><strong id="signal-name"></strong></div>
+        <div class="story-progress" aria-label="Walkthrough progress"><i id="story-progress-bar"></i></div>
+        <button id="exit-tour" type="button">Exit</button>
       </div>
-      <div class="room-scene" id="room-scene" role="group" aria-label="Interactive objects in the selected room">
-        <div class="scene-grid" aria-hidden="true"></div>
-        <div class="room-architecture" aria-hidden="true">
-          <i class="wall-line one"></i><i class="wall-line two"></i>
-          <div class="window"><span></span><span></span></div>
-          <div class="floor-shadow"></div>
+
+      <div id="signal-scene" class="room-scene signal-scene">
+        <div id="atmosphere" class="atmosphere" aria-hidden="true"></div>
+        <button id="signal-hotspot" class="signal-hotspot" type="button" aria-label="Explore this home signal">
+          <span class="signal-radar" aria-hidden="true"></span>
+          <span id="hotspot-icon" class="hotspot-icon" aria-hidden="true"></span>
+          <strong id="hotspot-label"></strong>
+          <small>Tap to notice</small>
+        </button>
+        <div class="scene-direction"><i></i><span id="scene-direction-text"></span></div>
+      </div>
+
+      <aside id="signal-card" class="signal-card" hidden aria-labelledby="card-title">
+        <button id="card-close" type="button" aria-label="Close signal card">×</button>
+        <p id="card-kicker" class="signal-eyebrow"></p>
+        <h2 id="card-title"></h2>
+        <p id="card-intro" class="card-intro"></p>
+        <div class="signal-answer">
+          <h3 id="card-question"></h3>
+          <div id="card-options"></div>
         </div>
-        <div id="object-layer"></div>
-        <div class="scene-prompt"><span class="pulse-dot"></span> Select a glowing object</div>
-      </div>
-      <div class="room-controls">
-        <button id="previous-room" type="button">← Previous room</button>
-        <div class="walk-progress" aria-label="Walkthrough room progress"><i id="walk-progress"></i></div>
-        <button id="next-room" type="button">Next room →</button>
+        <div id="signal-guidance" class="signal-guidance" hidden>
+          <span id="guidance-label"></span>
+          <h3 id="guidance-title"></h3>
+          <p id="guidance-copy"></p>
+          <button id="continue-tour" class="continue-button" type="button">Continue through the house <span aria-hidden="true">→</span></button>
+        </div>
+      </aside>
+    </section>
+
+    <section id="report" class="signal-report" hidden aria-labelledby="report-title">
+      <div class="report-wrap">
+        <p class="signal-eyebrow">YOUR HOME SIGNALS</p>
+        <h1 id="report-title">You noticed what matters.</h1>
+        <p class="report-lede">You don’t need to understand electricity. You just need to recognize when your home is asking for attention.</p>
+        <div class="report-meter"><i id="report-ring"></i><div><strong id="report-count">0</strong><span>signals explored</span></div></div>
+        <div id="report-list" class="report-list"></div>
+        <div class="report-actions">
+          <button id="restart-tour" class="enter-button" type="button"><span>Walk through again</span><span aria-hidden="true">↻</span></button>
+          <button id="print-report" class="signal-text-button" type="button">Print / save report</button>
+        </div>
+        <p class="report-disclaimer">Educational guidance only—not an inspection, diagnosis, safety determination or electrical load calculation. Major new loads should be evaluated with a professional load calculation.</p>
       </div>
     </section>
 
-    <aside class="learn-panel glass" id="learn-panel" aria-labelledby="learn-title" hidden>
-      <div class="panel-head">
-        <span id="learn-kicker">HOME OBJECT</span>
-        <button id="learn-close" type="button" aria-label="Close learning panel">×</button>
-      </div>
-      <div class="object-heading"><span id="learn-icon" aria-hidden="true"></span><div><h2 id="learn-title"></h2><p id="learn-normal"></p></div></div>
-      <div class="look-list"><h3>What to look after</h3><ul id="learn-look"></ul></div>
-      <div class="observation" id="observation">
-        <h3 id="learn-question"></h3>
-        <div id="answer-list"></div>
-      </div>
-      <div class="guidance" id="guidance" hidden>
-        <span id="result-label"></span>
-        <h3 id="result-title"></h3>
-        <p id="result-copy"></p>
-        <button id="answer-again" type="button">Choose another observation</button>
-      </div>
-    </aside>
-
-    <div class="brand-corner">WIRING TOMORROW, TODAY</div>
+    <footer class="signal-footer"><span>JEFF ELECTRIC</span><span>WIRING TOMORROW, TODAY</span></footer>
   </main>
 
   <dialog id="safety-dialog" aria-labelledby="safety-title">
-    <div class="dialog-head"><div><p class="eyebrow">BEFORE YOU BEGIN</p><h2 id="safety-title">Observe. Don’t investigate.</h2></div><button id="safety-close" aria-label="Close safety rules">×</button></div>
+    <div class="dialog-head">
+      <div><p class="signal-eyebrow">BEFORE YOU BEGIN</p><h2 id="safety-title">Observe. Don’t investigate.</h2></div>
+      <button id="safety-close" type="button" aria-label="Close safety guidance">×</button>
+    </div>
     <div class="dialog-body">
       <ul class="rule-list">
-        <li>Never remove an electrical panel or outlet cover.</li>
-        <li>Never touch exposed wiring or test live equipment.</li>
-        <li>Never disassemble an outlet, switch or appliance connection.</li>
-        <li>Stay away from downed lines, damaged meters and water near energized equipment.</li>
+        <li>Never remove a panel, switch or outlet cover.</li>
+        <li>Never touch exposed conductors or test live wiring.</li>
+        <li>Never disassemble an outlet, connection or appliance.</li>
+        <li>Keep away from downed lines, damaged meters and electrical equipment near water.</li>
       </ul>
-      <p><strong>Active smoke, fire, arcing or immediate danger:</strong> leave the area and call 911. This guide does not replace emergency services, a utility or a licensed electrician.</p>
-    </div>
-  </dialog>
-
-  <dialog id="summary-dialog" aria-labelledby="summary-title">
-    <div class="dialog-head"><div><p class="eyebrow">YOUR WALKTHROUGH</p><h2 id="summary-title">Home awareness list</h2></div><button id="summary-close" aria-label="Close walkthrough summary">×</button></div>
-    <div class="dialog-body">
-      <div class="summary-progress"><strong id="summary-total">0</strong><span>objects reviewed</span></div>
-      <div id="summary-list" class="summary-list"></div>
-      <p class="summary-empty" id="summary-empty">Explore the home and answer an observation question to start your list.</p>
-      <button id="summary-reset" class="reset-button" type="button">Restart walkthrough</button>
-      <small>This is an educational record of your selections—not an inspection, diagnosis, safety determination or electrical load calculation.</small>
+      <p><strong>Active smoke, fire, arcing or immediate danger:</strong> leave the area and call 911. This guide does not replace emergency services, your utility or a licensed electrician.</p>
     </div>
   </dialog>
 </body>
