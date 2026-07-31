@@ -55,6 +55,20 @@
     });
   }
 
+  function showOverview() {
+    activeItem = null;
+    closePanel();
+    $("#room-step").textContent = "START HERE";
+    $("#room-title").textContent = "Your virtual home";
+    $("#room-intro").textContent = "Choose a room below to move through the furnished home, then select the glowing electrical objects inside.";
+    $("#room-scene").dataset.tone = "home";
+    $("#room-scene").style.setProperty("--scene-size", "100%");
+    $("#room-scene").style.setProperty("--scene-position", "center");
+    $("#walk-progress").style.width = "0%";
+    $("#object-layer").innerHTML = "";
+    $$("#room-nav button").forEach(button => button.setAttribute("aria-pressed", "false"));
+  }
+
   function openItem(item) {
     activeItem = item;
     $("#learn-kicker").textContent = `ROOM ${roomIndex + 1} · ${D.rooms[roomIndex].name.toUpperCase()}`;
@@ -128,7 +142,8 @@
 
   function init() {
     buildRoomNav();
-    selectRoom(0);
+    showOverview();
+    $("#overview-button").onclick = showOverview;
     $("#previous-room").onclick = () => selectRoom(roomIndex - 1);
     $("#next-room").onclick = () => selectRoom(roomIndex + 1);
     $("#learn-close").onclick = closePanel;
