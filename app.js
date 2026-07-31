@@ -97,7 +97,9 @@
     obstacles.push({
       ...hazard,
       x:canvas.width + 40,
-      y:groundY - hazard.height
+      y:groundY - hazard.height,
+      w:hazard.width,
+      h:hazard.height
     });
   }
 
@@ -144,6 +146,7 @@
   }
 
   function update(dt) {
+    canvas.dataset.gameState = state;
     if(state !== "running") return;
     const step = Math.min(dt / 16.667,2);
     score += speed * .052 * step;
@@ -201,6 +204,9 @@
       particle.life -= .025 * step;
     });
     particles = particles.filter(particle => particle.life > 0);
+    canvas.dataset.obstacles = String(obstacles.length);
+    canvas.dataset.firstObstacleX = obstacles[0] ? String(Math.round(obstacles[0].x)) : "none";
+    canvas.dataset.playerY = String(Math.round(player.y));
 
     const nextNeighborhood = Math.floor(score / 250) % D.neighborhoods.length;
     if(nextNeighborhood !== neighborhoodIndex) {
