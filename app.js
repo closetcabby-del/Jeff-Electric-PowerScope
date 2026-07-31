@@ -4,7 +4,7 @@
   const $ = (s, root=document) => root.querySelector(s);
   const $$ = (s, root=document) => [...root.querySelectorAll(s)];
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let map, overlayGroup, currentLayer = "age";
+  let map, overlayGroup, zipGeoJSON, currentLayer = "age", pinnedZip = null;
 
   function initMap(){
     if(!window.L) return;
@@ -12,37 +12,85 @@
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
     L.control.zoom({position:"bottomleft"}).addTo(map);
     overlayGroup = L.layerGroup().addTo(map);
-    renderLayer("age");
+    fetch("assets/southeast-houston-zips.geojson")
+      .then(r=>r.ok?r.json():Promise.reject())
+      .then(data=>{zipGeoJSON=data;renderLayer("age")})
+      .catch(()=>renderLayer("age"));
     setTimeout(()=>map.invalidateSize(),200);
+  }
+  function zipStyle(id, active=false){
+    const styles={
+      age:{color:"#f4c84a",fillColor:"#f4c84a"},
+      cost:{color:"#5bd6ff",fillColor:"#5bd6ff"},
+      storm:{color:"#70a7ff",fillColor:"#315cbb"},
+      safety:{color:"#ffbb5b",fillColor:"#ff824a"}
+    };
+    const s=styles[id];
+    return {color:s.color,weight:active?3:1.4,opacity:active?1:.78,fillColor:s.fillColor,fillOpacity:active?.27:.10,dashArray:id==="storm"?"7 8":null,className:id==="storm"?"map-line":""};
   }
   function renderLayer(id){
     currentLayer=id;
     $$(".layer-button").forEach(b=>b.classList.toggle("active",b.dataset.layer===id));
     if(!map) return;
     overlayGroup.clearLayers();
-    const entries=Object.values(D.zips);
-    const colors={age:"#f4c84a",cost:"#5bd6ff",storm:"#70a7ff",safety:"#ffbb5b"};
-    entries.forEach((z,i)=>{
-      const radius=id==="cost" ? 10000+i*1300 : id==="storm" ? 12500-i*700 : 6500+i*650;
-      L.circle([z.lat,z.lng],{radius,color:colors[id],weight:1,fillColor:colors[id],fillOpacity:id==="safety"?.08:.11,dashArray:id==="storm"?"6 8":null,className:id==="storm"?"map-line":""}).addTo(overlayGroup);
-      L.marker([z.lat,z.lng],{icon:L.divIcon({className:"power-marker",iconSize:[12,12]})}).on("click",()=>showZip(z)).addTo(overlayGroup);
-    });
-    if(id==="storm"){
-      L.polyline(entries.map(z=>[z.lat,z.lng]),{color:colors[id],weight:1,dashArray:"5 10",className:"map-line"}).addTo(overlayGroup);
+    if(zipGeoJSON){
+      L.geoJSON(zipGeoJSON,{
+        style:feature=>zipStyle(id,pinnedZip===feature.properties.ZCTA5CE10),
+        onEachFeature:(feature,layer)=>{
+          const code=feature.properties.ZCTA5CE10, z=D.zips[code];
+          if(!z) return;
+          layer.bindTooltip(`${code} · ${z.name}`,{sticky:true,direction:"top",className:"zip-tooltip"});
+          layer.on({
+            mouseover:e=>{e.target.setStyle(zipStyle(id,true));showZip(code,e.originalEvent,false)},
+            mousemove:e=>positionMapCard(e.originalEvent),
+            mouseout:e=>{if(pinnedZip!==code)e.target.setStyle(zipStyle(id,false));if(!pinnedZip)hideHoverCard()},
+            click:e=>{pinnedZip=code;showZip(code,e.originalEvent,true);renderLayer(id)}
+          });
+        }
+      }).addTo(overlayGroup);
+    }else{
+      Object.entries(D.zips).forEach(([code,z])=>{
+        L.circle([z.lat,z.lng],{...zipStyle(id),radius:7500}).on("mouseover",e=>showZip(code,e.originalEvent,false)).on("click",e=>showZip(code,e.originalEvent,true)).addTo(overlayGroup);
+      });
     }
   }
   function showLayer(id){
-    const l=D.layers[id]; renderLayer(id);
+    const l=D.layers[id]; pinnedZip=null; renderLayer(id);
+    $("#map-card").hidden=false;
+    $("#map-card").classList.remove("zip-detail","is-pinned");
+    $("#map-card").removeAttribute("style");
     $("#map-card-kicker").textContent="DATA LAYER";
     $("#map-card-title").textContent=l.label;
     $("#map-card-stat").textContent=l.stat;
     $("#map-card-copy").textContent=l.copy;
   }
-  function showZip(z){
-    $("#map-card-kicker").textContent="REGIONAL CONTEXT";
+  function showZip(code,event,pin=false){
+    const z=D.zips[code]; if(!z)return;
+    $("#map-card").classList.add("zip-detail");
+    $("#map-card").classList.toggle("is-pinned",pin);
+    $("#map-card-kicker").textContent=`ZIP ${code} · HOVER PROFILE`;
     $("#map-card-title").textContent=z.name;
     $("#map-card-stat").textContent=z.era;
+    $("#map-card-housing").textContent=z.housing;
+    $("#map-card-sample").textContent=z.sample;
+    $("#map-card-panel").textContent=z.panel;
+    $("#map-card-code").textContent=z.code;
+    $("#map-card-hazards").innerHTML=z.hazards.map(x=>`<li>${x}</li>`).join("");
     $("#map-card-copy").textContent=z.copy;
+    $("#map-card").hidden=false;
+    if(event) positionMapCard(event);
+  }
+  function positionMapCard(event){
+    if(!event||innerWidth<=900)return;
+    const card=$("#map-card"), hero=$(".map-hero"), rect=hero.getBoundingClientRect();
+    const width=card.offsetWidth||370, height=card.offsetHeight||430;
+    const x=Math.min(Math.max(18,event.clientX-rect.left+22),rect.width-width-18);
+    const y=Math.min(Math.max(90,event.clientY-rect.top-height/2),rect.height-height-25);
+    card.style.left=`${x}px`;card.style.top=`${y}px`;card.style.right="auto";card.style.bottom="auto";
+  }
+  function hideHoverCard(){
+    const card=$("#map-card");
+    card.hidden=true;
   }
   function buildLayers(){
     const root=$("#layer-controls");
@@ -58,7 +106,7 @@
       e.preventDefault(); const code=$("#location-input").value.trim(); const z=D.zips[code];
       if(!z){$("#search-status").textContent="That ZIP is not in this first regional release."; return;}
       $("#search-status").textContent=`Flying to ${z.name} · ${code}`;
-      showZip(z); if(map) map.flyTo([z.lat,z.lng],13,{animate:!reduced,duration:reduced?0:1.3});
+      pinnedZip=code; showZip(code,null,true); if(map){map.flyTo([z.lat,z.lng],12,{animate:!reduced,duration:reduced?0:1.3});renderLayer(currentLayer)}
     });
   }
   function initEras(){
