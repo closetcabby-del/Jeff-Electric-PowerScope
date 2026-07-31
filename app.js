@@ -36,7 +36,7 @@
       attribution:"© OpenStreetMap contributors"
     }).addTo(map);
     L.control.zoom({position:"bottomright"}).addTo(map);
-    fetch("assets/southeast-houston-zips.geojson")
+    fetch("assets/southeast-houston-zips.geojson?v=map-only-1")
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
         geoData = data;
