@@ -5,10 +5,12 @@ A cinematic, mobile-first virtual-home experience that helps homeowners recogniz
 ## Experience
 
 - Immersive entry into a furnished, photorealistic cutaway home
+- “What brought you here?” entry choices using familiar homeowner language
+- Optional construction-era, homeowner/renter and Southeast Houston area context
 - Six guided moments: lighting changes, kitchen receptacles, breaker trips, EV charging, pool equipment and utility-side power loss
 - Environmental lighting, warmth, charging-flow and grid effects
 - One-question-at-a-time homeowner-safe guidance
-- Personalized Home Signals report with print/save support
+- Personalized Home Signals report grouped into monitoring, landlord/electrician, load-planning, utility and emergency next steps
 - Keyboard-accessible controls, native dialog behavior, visible focus states and reduced-motion support
 
 Home Signals is educational. It does not inspect, diagnose or determine the safety or service capacity of a property.

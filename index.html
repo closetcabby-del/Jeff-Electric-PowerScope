@@ -11,9 +11,9 @@
   <meta property="og:image" content="assets/social-card.svg">
   <title>Home Signals | Jeff Electric</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=home-signals-1">
-  <script src="data.js?v=home-signals-1" defer></script>
-  <script src="app.js?v=home-signals-1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=home-signals-2">
+  <script src="data.js?v=home-signals-2" defer></script>
+  <script src="app.js?v=home-signals-2" defer></script>
 </head>
 <body class="story-mode">
   <a class="skip-link" href="#story">Skip to the walkthrough</a>
@@ -31,13 +31,64 @@
       <div class="welcome-copy">
         <p class="signal-eyebrow">AN INTERACTIVE HOMEOWNER EXPERIENCE</p>
         <h1 id="welcome-title">Your home speaks<br>in <em>signals.</em></h1>
-        <p>Lights dim. Breakers trip. Outlets feel different. Walk through a virtual Houston home and learn what those moments may be telling you.</p>
+        <p>Your home doesn’t send notifications. It gives you little signals. Walk through a Southeast Houston home and see which ones you recognize.</p>
         <button id="enter-home" class="enter-button" type="button">
-          <span>Enter the house</span><span aria-hidden="true">→</span>
+          <span>What brought you here?</span><span aria-hidden="true">→</span>
         </button>
         <small>About 3 minutes · Observe only · No tools</small>
       </div>
       <div class="welcome-cue" aria-hidden="true"><i></i><span>HOUSTON / NIGHT</span></div>
+    </section>
+
+    <section id="intake" class="signal-intake" hidden aria-labelledby="intake-title">
+      <div class="intake-wrap">
+        <button id="intake-back" class="intake-back" type="button">← Back</button>
+        <p class="signal-eyebrow">START WITH WHAT’S HAPPENING</p>
+        <h1 id="intake-title">What brought you here?</h1>
+        <p class="intake-lede">Choose the moment that feels closest. There’s no diagnosis here—just a clearer, safer next step.</p>
+        <div id="concern-options" class="concern-grid" role="group" aria-label="Reason for visiting">
+          <button type="button" data-concern="lights"><span>✦</span><strong>My lights flicker or dim</strong><small>Especially when the AC starts</small></button>
+          <button type="button" data-concern="panel"><span>▤</span><strong>A breaker keeps tripping</strong><small>I want to know what that means</small></button>
+          <button type="button" data-concern="kitchen-outlet"><span>▥</span><strong>An outlet seems warm</strong><small>Or it buzzes or looks different</small></button>
+          <button type="button" data-concern="ev"><span>⚡</span><strong>I’m adding something big</strong><small>EV charger, generator or appliance</small></button>
+          <button type="button" data-concern="pool"><span>≈</span><strong>I have a pool or hot tub</strong><small>I want to know what to watch for</small></button>
+          <button type="button" data-concern="learn"><span>⌂</span><strong>I’m just learning</strong><small>Show me around the whole home</small></button>
+        </div>
+
+        <div id="home-context" class="home-context" hidden>
+          <div class="context-heading"><div><p class="signal-eyebrow">MAKE IT FEEL LIKE YOUR HOME</p><h2>One quick detail.</h2></div><span>Optional</span></div>
+          <div class="context-fields">
+            <label>Home age
+              <select id="home-era">
+                <option value="">Not sure</option>
+                <option value="before-1980">Built before 1980</option>
+                <option value="1980-1999">Built 1980–1999</option>
+                <option value="2000-2015">Built 2000–2015</option>
+                <option value="after-2015">Built after 2015</option>
+              </select>
+            </label>
+            <label>Living situation
+              <select id="home-role">
+                <option value="homeowner">I own the home</option>
+                <option value="renter">I rent the home</option>
+                <option value="landlord">I manage the property</option>
+              </select>
+            </label>
+            <label>ZIP or area
+              <select id="home-area">
+                <option value="Southeast Houston">Southeast Houston</option>
+                <option value="Pasadena">Pasadena / 77502</option>
+                <option value="Clear Lake">Clear Lake / 77058</option>
+                <option value="Pearland">Pearland / 77581</option>
+                <option value="Friendswood">Friendswood / 77546</option>
+                <option value="Webster">Webster / 77598</option>
+              </select>
+            </label>
+          </div>
+          <button id="begin-walkthrough" class="enter-button" type="button"><span>Walk through my home</span><span aria-hidden="true">→</span></button>
+          <small>Broad educational context only. This does not access property records.</small>
+        </div>
+      </div>
     </section>
 
     <section id="walkthrough" class="walkthrough" hidden aria-live="polite">
@@ -79,8 +130,10 @@
     <section id="report" class="signal-report" hidden aria-labelledby="report-title">
       <div class="report-wrap">
         <p class="signal-eyebrow">YOUR HOME SIGNALS</p>
-        <h1 id="report-title">You noticed what matters.</h1>
+        <h1 id="report-title">Here’s what your home may be asking for.</h1>
+        <p id="report-context" class="report-context"></p>
         <p class="report-lede">You don’t need to understand electricity. You just need to recognize when your home is asking for attention.</p>
+        <div id="report-groups" class="report-groups"></div>
         <div class="report-meter"><i id="report-ring"></i><div><strong id="report-count">0</strong><span>signals explored</span></div></div>
         <div id="report-list" class="report-list"></div>
         <div class="report-actions">
