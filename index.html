@@ -3,145 +3,103 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#050608">
-  <meta name="description" content="Experiment with a playable virtual Houston home and learn how modern electrical life fits together with Jeff Electric Home Power Lab.">
-  <meta property="og:title" content="Home Power Lab | Jeff Electric">
-  <meta property="og:description" content="What happens when yesterday’s home powers today’s life? Turn on the house and explore.">
+  <meta name="theme-color" content="#07090c">
+  <meta name="description" content="Play Jeff Electric Power Run—jump electrical bad ideas, collect gold bolts and unlock homeowner safety tips.">
+  <meta property="og:title" content="Power Run | Jeff Electric">
+  <meta property="og:description" content="Race through Southeast Houston. Spot electrical bad ideas before they become part of the house.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/social-card.svg">
-  <title>Home Power Lab | Jeff Electric</title>
+  <title>Power Run | Jeff Electric</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=power-lab-2">
-  <script src="data.js?v=power-lab-2" defer></script>
-  <script src="app.js?v=power-lab-2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=power-run-1">
+  <script src="data.js?v=power-run-1" defer></script>
+  <script src="app.js?v=power-run-1" defer></script>
 </head>
-<body class="lab-mode">
-  <a class="skip-link" href="#power-lab">Skip to Home Power Lab</a>
-  <main id="power-lab" class="power-lab">
-    <header class="lab-header">
-      <a class="signal-brand" href="./" aria-label="Jeff Electric Home Power Lab home"><span aria-hidden="true">ϟ</span><strong>JEFF ELECTRIC</strong></a>
-      <div><span>HOME POWER LAB</span><button id="safety-open" class="signal-text-button" type="button">Safety</button></div>
+<body>
+  <a class="skip-link" href="#game-shell">Skip to game</a>
+  <main class="game-page">
+    <header class="game-header">
+      <a class="game-brand" href="./" aria-label="Jeff Electric Power Run home">
+        <span aria-hidden="true">ϟ</span>
+        <div><strong>JEFF ELECTRIC</strong><small>WIRING TOMORROW, TODAY</small></div>
+      </a>
+      <button id="how-open" class="outline-button" type="button">How to play</button>
     </header>
 
-    <section id="lab-intro" class="lab-intro" aria-labelledby="lab-title">
-      <div class="room-scene lab-intro-house" aria-hidden="true"></div>
-      <div class="lab-intro-copy">
-        <p class="signal-eyebrow">A PLAYABLE HOUSTON HOME</p>
-        <h1 id="lab-title">What happens when yesterday’s home powers <em>today’s life?</em></h1>
-        <p>Turn things on. Change the year. Bring in a Houston storm. Then see how every part of modern life connects back to one home.</p>
-        <button id="power-on" class="enter-button" type="button"><span>Turn the house on</span><span aria-hidden="true">ϟ</span></button>
-        <small>Interactive education · Not a load calculation · About 3 minutes</small>
+    <section class="game-intro">
+      <div>
+        <p class="eyebrow">A HOMEOWNER ARCADE GAME</p>
+        <h1>Power <em>Run.</em></h1>
+        <p>Race the Jeff Electric van through Southeast Houston. Jump the electrical bad ideas. Collect gold bolts. Learn what belongs in a real home.</p>
+      </div>
+      <div class="game-promise"><span>01</span><strong>SPOT IT</strong><i></i><span>02</span><strong>JUMP IT</strong><i></i><span>03</span><strong>LEARN IT</strong></div>
+    </section>
+
+    <section id="game-shell" class="game-shell" aria-labelledby="game-title">
+      <div class="game-topbar">
+        <div><span>ROUTE</span><strong>SOUTHEAST HOUSTON</strong></div>
+        <div class="game-stats">
+          <p><span>DISTANCE</span><strong id="score">0000</strong><small>m</small></p>
+          <p><span>GOLD BOLTS</span><strong id="bolts">0</strong></p>
+          <p><span>BEST</span><strong id="best">0000</strong><small>m</small></p>
+        </div>
+        <button id="pause-button" type="button" aria-pressed="false">Pause</button>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="game" width="1200" height="420" role="img" aria-label="Jeff Electric service van runner game. Press Space, Arrow Up or the Jump button to jump."></canvas>
+        <div id="start-screen" class="game-overlay">
+          <div class="overlay-mark" aria-hidden="true">ϟ</div>
+          <p class="eyebrow">TONIGHT’S ROUTE</p>
+          <h2 id="game-title">Can you spot the bad ideas?</h2>
+          <p>Jump hazards. Collect bolts. Every mistake unlocks a homeowner-safe lesson—no tools required.</p>
+          <button id="start-button" class="gold-button" type="button">Start the route <span aria-hidden="true">→</span></button>
+          <small>Space / ↑ / Tap to jump</small>
+        </div>
+        <div id="lesson-screen" class="game-overlay lesson-overlay" hidden>
+          <span id="lesson-icon" class="lesson-icon" aria-hidden="true"></span>
+          <p class="eyebrow">SIGNAL CARD UNLOCKED</p>
+          <h2 id="lesson-title"></h2>
+          <p id="lesson-copy"></p>
+          <div class="lesson-rule"><span>REMEMBER</span><strong id="lesson-rule"></strong></div>
+          <button id="continue-button" class="gold-button" type="button">Try that stretch again <span aria-hidden="true">↻</span></button>
+        </div>
+        <div id="pause-screen" class="game-overlay compact-overlay" hidden>
+          <p class="eyebrow">ROUTE PAUSED</p>
+          <h2>Take a breather.</h2>
+          <button id="resume-button" class="gold-button" type="button">Resume</button>
+        </div>
+        <div class="route-label" aria-hidden="true"><span id="neighborhood">PASADENA</span><i></i><strong id="heat">96°F</strong></div>
+      </div>
+
+      <div class="mobile-controls">
+        <p id="game-status" aria-live="polite">Ready to start the route.</p>
+        <button id="jump-button" class="jump-button" type="button"><span aria-hidden="true">↑</span><strong>JUMP</strong></button>
       </div>
     </section>
 
-    <section id="lab-stage" class="lab-stage" hidden aria-live="polite">
-      <div class="lab-status">
-        <div><span id="lab-scenario-label">YOUR EVENING</span><strong id="lab-message">Tap equipment to build your evening.</strong></div>
-        <div class="activity-readout"><span>HOUSE STATUS</span><strong id="activity-value">0</strong><small id="activity-unit">systems on</small></div>
-        <button id="finish-lab" type="button">My Power Story →</button>
-      </div>
-
-      <div id="lab-house" class="room-scene lab-house" data-xray="false" data-event="none">
-        <div class="house-shade" aria-hidden="true"></div>
-        <svg class="power-network" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <filter id="network-glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <path class="service-line" d="M28 450 L130 410 L190 365"/>
-          <path data-path="ac" d="M190 365 L395 280 L850 130"/>
-          <path data-path="range" d="M190 365 L420 390"/>
-          <path data-path="dryer" d="M190 365 L760 405"/>
-          <path data-path="pool" d="M190 365 L680 505"/>
-          <path data-path="ev" d="M190 365 L865 390"/>
-          <path data-path="workshop" d="M190 365 L905 455"/>
-          <path data-path="heater" d="M190 365 L530 215"/>
-          <path data-path="battery" d="M190 365 L925 310"/>
-          <circle class="panel-node" cx="190" cy="365" r="9"/>
-        </svg>
-        <div id="era-ghosts" class="era-ghosts" aria-hidden="true"></div>
-        <div id="device-layer" class="device-layer"></div>
-        <button id="event-cue" class="event-cue" type="button" hidden><span aria-hidden="true">!</span><strong>Something changed</strong><small>Tap to notice</small></button>
-        <button id="xray-toggle" class="xray-toggle" type="button" aria-pressed="false"><span aria-hidden="true">⌁</span> See behind the walls</button>
-        <div class="lab-caption"><i></i><span id="lab-caption">Electricity enters through the service equipment and branches throughout the home.</span></div>
-      </div>
-
-      <section class="lab-console" aria-label="Home Power Lab controls">
-        <nav class="console-tabs" aria-label="Experiment controls">
-          <button type="button" data-console-tab="moments" aria-selected="true">Houston moments</button>
-          <button type="button" data-console-tab="equipment" aria-selected="false">Equipment</button>
-          <button type="button" data-console-tab="time" aria-selected="false">Time machine</button>
-        </nav>
-        <div class="console-row scenario-row" data-console-panel="moments">
-          <div class="console-label"><span>01</span><strong>Choose a Houston moment</strong></div>
-          <div id="scenario-buttons" class="scenario-buttons"></div>
-        </div>
-        <div class="console-row time-row" data-console-panel="time" hidden>
-          <div class="console-label"><span>02</span><strong>Move through time</strong></div>
-          <div class="time-control">
-            <input id="era-slider" type="range" min="0" max="3" step="1" value="3" aria-label="Home electrical era">
-            <div><span>1975</span><span>1995</span><span>2015</span><span>Today</span></div>
-          </div>
-          <p id="era-copy"></p>
-        </div>
-        <div class="console-row equipment-row" data-console-panel="equipment" hidden>
-          <div class="console-label"><span>03</span><strong>Build your evening</strong></div>
-          <div id="equipment-buttons" class="equipment-buttons"></div>
-          <button id="reset-lab" class="console-reset" type="button">Reset</button>
-        </div>
-        <p class="lab-method">Choose a preset or build your own evening. The experience is illustrative—not a measurement, load calculation, service sizing, or safety determination.</p>
-      </section>
-
-      <aside id="notice-card" class="notice-card" hidden aria-labelledby="notice-title">
-        <button id="notice-close" type="button" aria-label="Close observation">×</button>
-        <p class="signal-eyebrow">WAIT—DID YOU SEE THAT?</p>
-        <h2 id="notice-title"></h2>
-        <p id="notice-copy"></p>
-        <h3>Does this happen in your home?</h3>
-        <div id="notice-options">
-          <button type="button" data-answer="yes">Yes, I recognize it</button>
-          <button type="button" data-answer="unsure">I’m not sure</button>
-          <button type="button" data-answer="no">No, I’m just exploring</button>
-        </div>
-        <div id="notice-guidance" hidden>
-          <span id="notice-label"></span>
-          <h3 id="notice-guidance-title"></h3>
-          <p id="notice-guidance-copy"></p>
-          <button id="notice-continue" class="continue-button" type="button">Keep experimenting →</button>
-        </div>
-      </aside>
+    <section class="cards-section" aria-labelledby="cards-title">
+      <div><p class="eyebrow">YOUR COLLECTION</p><h2 id="cards-title">Signal Cards</h2><p>Each hazard teaches one practical homeowner lesson.</p></div>
+      <div id="signal-cards" class="signal-cards"></div>
     </section>
 
-    <section id="power-story" class="power-story" hidden aria-labelledby="story-title">
-      <div class="story-wrap">
-        <p class="signal-eyebrow">YOUR HOME POWER STORY</p>
-        <h1 id="story-title">This is the life your home is powering.</h1>
-        <p id="story-summary" class="story-summary"></p>
-        <div class="story-house">
-          <div id="story-devices" class="story-devices"></div>
-          <div class="story-core"><span>ϟ</span><strong id="story-activity">0</strong><small>systems active</small></div>
-        </div>
-        <div id="story-observations" class="story-observations"></div>
-        <div class="story-actions">
-          <button id="back-to-lab" class="enter-button" type="button"><span>Keep experimenting</span><span aria-hidden="true">←</span></button>
-          <button id="restart-lab" class="signal-text-button" type="button">Start over</button>
-        </div>
-        <p class="report-disclaimer">Home Power Lab is educational and does not inspect, diagnose, calculate or determine the safety or capacity of a property. Major equipment should be planned using actual ratings and a professional load calculation.</p>
-      </div>
+    <section class="safety-note">
+      <span aria-hidden="true">!</span>
+      <p><strong>The obstacles are game metaphors—not instructions.</strong> Never remove covers, touch exposed conductors, test live wiring or approach downed lines. Active smoke, fire, arcing or immediate danger requires leaving the area and calling 911.</p>
     </section>
 
-    <footer class="signal-footer"><span>JEFF ELECTRIC</span><span>WIRING TOMORROW, TODAY</span></footer>
+    <footer class="game-footer"><span>JEFF ELECTRIC</span><span>POWER RUN / HOMEOWNER EDITION</span><span>WIRING TOMORROW, TODAY</span></footer>
   </main>
 
-  <dialog id="safety-dialog" aria-labelledby="safety-title">
-    <div class="dialog-head"><div><p class="signal-eyebrow">SAFE EXPLORATION</p><h2 id="safety-title">Observe. Don’t investigate.</h2></div><button id="safety-close" type="button" aria-label="Close safety guidance">×</button></div>
+  <dialog id="how-dialog" aria-labelledby="how-title">
+    <div class="dialog-head"><div><p class="eyebrow">HOW TO PLAY</p><h2 id="how-title">Spot it. Jump it. Learn it.</h2></div><button id="how-close" type="button" aria-label="Close instructions">×</button></div>
     <div class="dialog-body">
-      <ul class="rule-list">
-        <li>Never remove a panel, switch or outlet cover.</li>
-        <li>Never touch exposed conductors or test live wiring.</li>
-        <li>Never disassemble electrical equipment or perform energized work.</li>
-        <li>Stay away from downed lines, damaged meters and electrical equipment near water.</li>
-      </ul>
-      <p><strong>Active smoke, fire, arcing or immediate danger:</strong> leave the area and call 911. This experience does not replace emergency services, your utility or a licensed electrician.</p>
+      <ol>
+        <li>Press <strong>Space</strong>, <strong>Arrow Up</strong>, tap the game or use the large Jump button.</li>
+        <li>Jump over electrical bad ideas and collect electric-gold bolts.</li>
+        <li>If the van reaches a hazard, the game pauses and explains the safe homeowner takeaway.</li>
+      </ol>
+      <p>This game teaches recognition only. It does not inspect, diagnose or replace emergency services, the utility, a landlord or a licensed electrician.</p>
     </div>
   </dialog>
 </body>

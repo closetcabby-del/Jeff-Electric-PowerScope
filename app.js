@@ -1,224 +1,404 @@
 (() => {
   "use strict";
-  const D = window.POWER_LAB_DATA;
+  const D = window.POWER_RUN_DATA;
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
   const $ = selector => document.querySelector(selector);
-  let eraIndex = 3;
-  let active = new Set();
-  let observations = [];
-  let selectedScenario = null;
-  let currentEvent = null;
-  let eventSource = "";
-  let pendingEvent = null;
-  const seenEvents = new Set();
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const groundY = 340;
+  const player = {x:130,y:groundY - 64,w:112,h:64,vy:0,onGround:true};
+  let obstacles = [];
+  let collectibles = [];
+  let particles = [];
+  let unlocked = new Set();
+  let score = 0;
+  let boltCount = 0;
+  let speed = reducedMotion ? 5 : 6.2;
+  let state = "ready";
+  let lastTime = 0;
+  let nextObstacle = 1350;
+  let nextBolt = 720;
+  let sceneryOffset = 0;
+  let neighborhoodIndex = 0;
+  let best = readBest();
 
-  function setView(view) {
-    ["#lab-intro","#lab-stage","#power-story"].forEach(id => $(id).hidden = id !== view);
-    document.body.dataset.labView = view.slice(1);
-    window.scrollTo({top:0,behavior:"smooth"});
+  function readBest() {
+    try { return Number(localStorage.getItem("jeff-power-run-best")) || 0; }
+    catch (_) { return 0; }
   }
 
-  function renderEquipment() {
-    $("#equipment-buttons").innerHTML = D.equipment.map(item => `
-      <button type="button" data-device="${item.id}" aria-pressed="${active.has(item.id)}">
-        <span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong>
-      </button>`).join("");
-    $("#device-layer").innerHTML = D.equipment.map(item => `
-      <button type="button" class="lab-device" data-device="${item.id}" aria-pressed="${active.has(item.id)}"
-        style="--device-x:${item.x}%;--device-y:${item.y}%" aria-label="Toggle ${item.name}">
-        <span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong>
-      </button>`).join("");
-    bindDeviceButtons();
-    updateAvailability();
-    updateHouse();
+  function writeBest() {
+    try { localStorage.setItem("jeff-power-run-best",String(best)); }
+    catch (_) {}
   }
 
-  function renderScenarios() {
-    $("#scenario-buttons").innerHTML = D.scenarios.map(item => `
-      <button type="button" data-scenario="${item.id}" aria-pressed="false"><span aria-hidden="true">${item.icon}</span>${item.name}</button>`).join("");
-    $("#scenario-buttons").querySelectorAll("button").forEach(button => {
-      button.addEventListener("click", () => applyScenario(button.dataset.scenario));
+  function formatScore(value) {
+    return String(Math.floor(value)).padStart(4,"0");
+  }
+
+  function resetRun() {
+    obstacles = [];
+    collectibles = [];
+    particles = [];
+    score = 0;
+    boltCount = 0;
+    speed = reducedMotion ? 5 : 6.2;
+    nextObstacle = 900;
+    nextBolt = 520;
+    player.y = groundY - player.h;
+    player.vy = 0;
+    player.onGround = true;
+    updateHud();
+  }
+
+  function startRun() {
+    resetRun();
+    state = "running";
+    $("#start-screen").hidden = true;
+    $("#lesson-screen").hidden = true;
+    $("#pause-screen").hidden = true;
+    $("#pause-button").disabled = false;
+    $("#game-status").textContent = "Route started. Jump the electrical bad ideas.";
+    canvas.focus?.();
+  }
+
+  function resumeAfterLesson() {
+    resetRun();
+    state = "running";
+    $("#lesson-screen").hidden = true;
+    $("#game-status").textContent = "Back on the route.";
+  }
+
+  function jump() {
+    if(state === "ready") { startRun(); return; }
+    if(state !== "running" || !player.onGround) return;
+    player.vy = -15.5;
+    player.onGround = false;
+    burst(player.x + 25,player.y + player.h,"#f4c84a",5);
+    $("#game-status").textContent = "Jump!";
+  }
+
+  function togglePause() {
+    if(state === "running") {
+      state = "paused";
+      $("#pause-screen").hidden = false;
+      $("#pause-button").setAttribute("aria-pressed","true");
+      $("#pause-button").textContent = "Resume";
+    } else if(state === "paused") {
+      state = "running";
+      $("#pause-screen").hidden = true;
+      $("#pause-button").setAttribute("aria-pressed","false");
+      $("#pause-button").textContent = "Pause";
+    }
+  }
+
+  function spawnObstacle() {
+    const hazard = D.hazards[Math.floor(Math.random() * D.hazards.length)];
+    obstacles.push({
+      ...hazard,
+      x:canvas.width + 40,
+      y:groundY - hazard.height
     });
   }
 
-  function bindDeviceButtons() {
-    document.querySelectorAll("[data-device]").forEach(button => {
-      button.addEventListener("click", () => toggleDevice(button.dataset.device));
+  function spawnBolt() {
+    collectibles.push({
+      x:canvas.width + 40,
+      y:groundY - 96 - Math.random() * 72,
+      w:28,h:36,phase:Math.random() * Math.PI * 2
     });
   }
 
-  function updateAvailability() {
-    const allowed = new Set(D.eras[eraIndex].available);
-    document.querySelectorAll("[data-device]").forEach(button => {
-      const disabled = !allowed.has(button.dataset.device);
-      button.disabled = disabled;
-      button.setAttribute("aria-disabled", String(disabled));
+  function intersects(a,b,padding = 0) {
+    return a.x + padding < b.x + b.w &&
+      a.x + a.w - padding > b.x &&
+      a.y + padding < b.y + b.h &&
+      a.y + a.h - padding > b.y;
+  }
+
+  function showLesson(hazard) {
+    state = "lesson";
+    unlocked.add(hazard.id);
+    best = Math.max(best,Math.floor(score));
+    writeBest();
+    $("#lesson-icon").textContent = hazard.icon;
+    $("#lesson-icon").style.setProperty("--lesson-color",hazard.color);
+    $("#lesson-title").textContent = hazard.title;
+    $("#lesson-copy").textContent = hazard.copy;
+    $("#lesson-rule").textContent = hazard.rule;
+    $("#lesson-screen").hidden = false;
+    $("#game-status").textContent = `Signal Card unlocked: ${hazard.label}.`;
+    renderCards();
+    updateHud();
+    $("#continue-button").focus();
+  }
+
+  function burst(x,y,color,count = 8) {
+    if(reducedMotion) return;
+    for(let i=0;i<count;i++) {
+      particles.push({
+        x,y,vx:(Math.random() - .5) * 5,vy:-Math.random() * 5 - 1,
+        life:1,color,size:2 + Math.random() * 3
+      });
+    }
+  }
+
+  function update(dt) {
+    if(state !== "running") return;
+    const step = Math.min(dt / 16.667,2);
+    score += speed * .052 * step;
+    speed = Math.min(reducedMotion ? 8 : 11.5,speed + .00055 * dt);
+    sceneryOffset = (sceneryOffset + speed * .16 * step) % 260;
+
+    player.vy += .82 * step;
+    player.y += player.vy * step;
+    if(player.y >= groundY - player.h) {
+      player.y = groundY - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+
+    nextObstacle -= dt;
+    if(nextObstacle <= 0) {
+      spawnObstacle();
+      nextObstacle = Math.max(860,1550 - speed * 55) + Math.random() * 720;
+    }
+    nextBolt -= dt;
+    if(nextBolt <= 0) {
+      spawnBolt();
+      nextBolt = 760 + Math.random() * 760;
+    }
+
+    for(let i=obstacles.length - 1;i>=0;i--) {
+      const obstacle = obstacles[i];
+      obstacle.x -= speed * step;
+      if(intersects(player,obstacle,10)) {
+        showLesson(obstacle);
+        return;
+      }
+      if(obstacle.x + obstacle.w < -20) obstacles.splice(i,1);
+    }
+
+    for(let i=collectibles.length - 1;i>=0;i--) {
+      const bolt = collectibles[i];
+      bolt.x -= speed * step;
+      bolt.phase += .08 * step;
+      if(intersects(player,bolt,8)) {
+        boltCount++;
+        score += 12;
+        burst(bolt.x,bolt.y,"#f4c84a",10);
+        collectibles.splice(i,1);
+        $("#game-status").textContent = `Gold bolt collected. ${boltCount} total.`;
+      } else if(bolt.x + bolt.w < -20) {
+        collectibles.splice(i,1);
+      }
+    }
+
+    particles.forEach(particle => {
+      particle.x += particle.vx * step;
+      particle.y += particle.vy * step;
+      particle.vy += .18 * step;
+      particle.life -= .025 * step;
     });
+    particles = particles.filter(particle => particle.life > 0);
+
+    const nextNeighborhood = Math.floor(score / 250) % D.neighborhoods.length;
+    if(nextNeighborhood !== neighborhoodIndex) {
+      neighborhoodIndex = nextNeighborhood;
+      $("#neighborhood").textContent = D.neighborhoods[neighborhoodIndex];
+    }
+    updateHud();
   }
 
-  function activityScore() {
-    return Math.min(100,D.equipment.filter(item => active.has(item.id)).reduce((sum,item) => sum + item.points,0));
+  function updateHud() {
+    $("#score").textContent = formatScore(score);
+    $("#bolts").textContent = boltCount;
+    $("#best").textContent = formatScore(best);
   }
 
-  function updateHouse() {
-    const score = activityScore();
-    $("#activity-value").textContent = active.size;
-    $("#activity-unit").textContent = active.size === 1 ? "system on" : "systems on";
-    $("#lab-house").style.setProperty("--activity",`${score}%`);
-    document.querySelectorAll("[data-device]").forEach(button => {
-      button.setAttribute("aria-pressed",String(active.has(button.dataset.device)));
+  function roundedRect(x,y,w,h,r) {
+    ctx.beginPath();
+    ctx.roundRect(x,y,w,h,r);
+  }
+
+  function drawBackground() {
+    const sky = ctx.createLinearGradient(0,0,0,groundY);
+    sky.addColorStop(0,"#07131d");
+    sky.addColorStop(.55,"#102b3b");
+    sky.addColorStop(1,"#d18746");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,canvas.width,groundY);
+
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    for(let i=0;i<28;i++) {
+      const x=(i*97 + 43) % canvas.width;
+      const y=25 + (i*47)%130;
+      ctx.fillRect(x,y,1.5,1.5);
+    }
+
+    ctx.fillStyle = "rgba(244,200,74,.82)";
+    ctx.beginPath();
+    ctx.arc(990,90,34,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(7,19,29,.32)";
+    ctx.beginPath();
+    ctx.arc(976,78,34,0,Math.PI*2);
+    ctx.fill();
+
+    const farOffset = sceneryOffset * .35;
+    ctx.fillStyle = "#0b1720";
+    for(let i=-1;i<7;i++) {
+      const x=i*240 - farOffset;
+      ctx.fillRect(x,225,180,115);
+      ctx.beginPath();
+      ctx.moveTo(x-12,225);ctx.lineTo(x+90,165);ctx.lineTo(x+192,225);ctx.fill();
+      ctx.fillStyle = "rgba(244,200,74,.33)";
+      ctx.fillRect(x+25,255,28,36);ctx.fillRect(x+120,255,28,36);
+      ctx.fillStyle = "#0b1720";
+    }
+
+    ctx.fillStyle = "#091117";
+    ctx.fillRect(515,150,8,190);
+    ctx.fillRect(480,175,80,6);
+    ctx.strokeStyle = "rgba(91,214,255,.2)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();ctx.moveTo(0,190);ctx.quadraticCurveTo(300,215,520,178);ctx.quadraticCurveTo(850,140,1200,180);ctx.stroke();
+
+    ctx.fillStyle = "#13191d";
+    ctx.fillRect(0,groundY,canvas.width,80);
+    ctx.fillStyle = "#f4c84a";
+    for(let x=-80 - sceneryOffset*3;x<canvas.width;x+=170) ctx.fillRect(x,376,74,4);
+    ctx.fillStyle = "#374047";
+    ctx.fillRect(0,groundY,canvas.width,4);
+  }
+
+  function drawVan() {
+    const x=player.x,y=player.y;
+    ctx.save();
+    if(!player.onGround && !reducedMotion) ctx.rotate(-.035);
+    ctx.shadowColor = "rgba(0,0,0,.35)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = "#f4c84a";
+    roundedRect(x,y+14,player.w,42,8);ctx.fill();
+    ctx.fillStyle = "#f7f7f4";
+    roundedRect(x+18,y,70,32,7);ctx.fill();
+    ctx.fillStyle = "#10202a";
+    roundedRect(x+29,y+6,25,19,3);ctx.fill();
+    roundedRect(x+60,y+6,21,19,3);ctx.fill();
+    ctx.fillStyle = "#0a0c0e";
+    ctx.beginPath();ctx.arc(x+27,y+57,12,0,Math.PI*2);ctx.arc(x+86,y+57,12,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle = "#aeb7bd";
+    ctx.beginPath();ctx.arc(x+27,y+57,5,0,Math.PI*2);ctx.arc(x+86,y+57,5,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#111";
+    ctx.font = "800 11px Manrope, sans-serif";
+    ctx.fillText("JEFF",x+50,y+43);
+    ctx.font = "800 18px Manrope, sans-serif";
+    ctx.fillText("ϟ",x+7,y+44);
+    ctx.restore();
+  }
+
+  function drawObstacle(obstacle) {
+    ctx.save();
+    ctx.shadowColor = obstacle.color;
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = "#14181c";
+    roundedRect(obstacle.x,obstacle.y,obstacle.w,obstacle.h,6);ctx.fill();
+    ctx.strokeStyle = obstacle.color;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = obstacle.color;
+    ctx.font = `700 ${Math.min(24,obstacle.height*.48)}px Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(obstacle.icon,obstacle.x + obstacle.w/2,obstacle.y + obstacle.h*.63);
+    ctx.font = "700 9px Manrope, sans-serif";
+    ctx.fillStyle = "#f6f6f3";
+    ctx.fillText(obstacle.label,obstacle.x + obstacle.w/2,obstacle.y - 9);
+    ctx.restore();
+  }
+
+  function drawBolt(bolt) {
+    ctx.save();
+    ctx.translate(bolt.x + bolt.w/2,bolt.y + bolt.h/2 + Math.sin(bolt.phase)*5);
+    ctx.shadowColor = "#f4c84a";ctx.shadowBlur = 18;
+    ctx.fillStyle = "#f4c84a";
+    ctx.beginPath();
+    ctx.moveTo(5,-18);ctx.lineTo(-10,2);ctx.lineTo(-1,2);ctx.lineTo(-7,18);ctx.lineTo(12,-5);ctx.lineTo(3,-5);ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    particles.forEach(particle => {
+      ctx.globalAlpha = particle.life;
+      ctx.fillStyle = particle.color;
+      ctx.fillRect(particle.x,particle.y,particle.size,particle.size);
     });
-    document.querySelectorAll(".power-network [data-path]").forEach(path => {
-      path.classList.toggle("is-live",active.has(path.dataset.path));
-    });
-    $("#lab-caption").textContent = active.size
-      ? `${active.size} system${active.size === 1 ? "" : "s"} active. The glowing routes are simplified educational pathways.`
-      : "Electricity enters through the service equipment and branches throughout the home.";
-    if(score >= 55 && !seenEvents.has("activity")) triggerEvent("activity","Your equipment mix");
+    ctx.globalAlpha = 1;
   }
 
-  function toggleDevice(id) {
-    const item = D.equipment.find(device => device.id === id);
-    if(item.era > eraIndex) return;
-    if(active.has(id)) active.delete(id); else active.add(id);
-    selectedScenario = null;
-    document.querySelectorAll("[data-scenario]").forEach(button => button.setAttribute("aria-pressed","false"));
-    $("#lab-scenario-label").textContent = "YOUR EVENING";
-    $("#lab-message").textContent = active.size ? "Your home changes as equipment overlaps." : "Tap equipment to build your evening.";
-    updateHouse();
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawBackground();
+    obstacles.forEach(drawObstacle);
+    collectibles.forEach(drawBolt);
+    drawVan();
+    drawParticles();
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    ctx.font = "700 11px Manrope, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("SOUTHEAST HOUSTON · HOMEOWNER ROUTE",22,28);
   }
 
-  function applyScenario(id) {
-    const scenario = D.scenarios.find(item => item.id === id);
-    selectedScenario = scenario;
-    const allowed = new Set(D.eras[eraIndex].available);
-    active = new Set(scenario.active.filter(item => allowed.has(item)));
-    document.querySelectorAll("[data-scenario]").forEach(button => button.setAttribute("aria-pressed",String(button.dataset.scenario === id)));
-    $("#lab-scenario-label").textContent = scenario.name.toUpperCase();
-    $("#lab-message").textContent = scenario.message;
-    $("#lab-house").dataset.event = scenario.event;
-    updateHouse();
-    triggerEvent(scenario.event,scenario.name);
+  function loop(time) {
+    const dt = lastTime ? time - lastTime : 16.667;
+    lastTime = time;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
   }
 
-  function setEra(nextIndex) {
-    eraIndex = Number(nextIndex);
-    const era = D.eras[eraIndex];
-    const allowed = new Set(era.available);
-    active = new Set([...active].filter(item => allowed.has(item)));
-    $("#era-copy").textContent = era.copy;
-    $("#lab-house").dataset.era = era.year.toLowerCase();
-    $("#era-ghosts").textContent = eraIndex < 3 ? `${8 - era.available.length} modern systems have not entered this home yet.` : "Today’s home can support more kinds of electrical life than ever before.";
-    updateAvailability();
-    updateHouse();
+  function renderCards() {
+    $("#signal-cards").innerHTML = D.hazards.map(hazard => {
+      const isUnlocked = unlocked.has(hazard.id);
+      return `<article class="${isUnlocked ? "unlocked" : "locked"}">
+        <span aria-hidden="true">${isUnlocked ? hazard.icon : "?"}</span>
+        <div><small>${isUnlocked ? "UNLOCKED" : "KEEP PLAYING"}</small><strong>${isUnlocked ? hazard.label : "Signal Card"}</strong></div>
+      </article>`;
+    }).join("");
   }
 
-  function triggerEvent(eventId,source) {
-    if(seenEvents.has(eventId)) return;
-    seenEvents.add(eventId);
-    pendingEvent = eventId;
-    eventSource = source;
-    $("#event-cue").hidden = false;
-    $("#event-cue").querySelector("small").textContent = eventId === "activity" ? "Major systems overlap" : "Tap to notice";
-    $("#lab-house").dataset.event = eventId;
-  }
-
-  function openPendingEvent() {
-    if(!pendingEvent) return;
-    currentEvent = pendingEvent;
-    pendingEvent = null;
-    const eventId = currentEvent;
-    const event = D.events[eventId];
-    $("#notice-title").textContent = event.title;
-    $("#notice-copy").textContent = event.copy;
-    $("#notice-options").hidden = false;
-    $("#notice-guidance").hidden = true;
-    $("#notice-card").hidden = false;
-    $("#lab-house").dataset.event = eventId;
-    $("#event-cue").hidden = true;
-    $("#notice-close").focus();
-  }
-
-  function answerNotice(answer) {
-    const event = D.events[currentEvent];
-    const guidance = event[answer];
-    observations.push({event:currentEvent,source:eventSource,answer,label:guidance.label,title:guidance.title,copy:guidance.copy});
-    $("#notice-label").textContent = guidance.label;
-    $("#notice-guidance-title").textContent = guidance.title;
-    $("#notice-guidance-copy").textContent = guidance.copy;
-    $("#notice-options").hidden = true;
-    $("#notice-guidance").hidden = false;
-    $("#notice-continue").focus();
-  }
-
-  function closeNotice() {
-    $("#notice-card").hidden = true;
-    $("#lab-house").dataset.event = "none";
-  }
-
-  function buildStory() {
-    const era = D.eras[eraIndex];
-    const items = D.equipment.filter(item => active.has(item.id));
-    $("#story-activity").textContent = items.length;
-    $("#story-summary").textContent = `${era.year} view · ${items.length} active system${items.length === 1 ? "" : "s"} · ${selectedScenario ? selectedScenario.name : "your custom evening"}. These are the conditions you explored—not findings about a property.`;
-    $("#story-devices").innerHTML = items.length ? items.map(item => `<span><i>${item.icon}</i>${item.name}</span>`).join("") : "<p>No equipment was left active. Return to the lab to build an evening.</p>";
-    $("#story-observations").innerHTML = observations.length ? observations.map(item => `
-      <article>
-        <div><small>${item.source}</small><h2>${D.events[item.event].title}</h2><p>${item.copy}</p></div>
-        <span>${item.label}</span>
-      </article>`).join("") : `<article><div><small>YOUR EXPLORATION</small><h2>No home moments were saved yet.</h2><p>Try a Houston scenario or activate several major systems, then answer “Does this happen in your home?”</p></div><span>KEEP EXPLORING</span></article>`;
-    setView("#power-story");
-  }
-
-  function resetLab() {
-    eraIndex = 3;
-    active.clear();
-    observations = [];
-    selectedScenario = null;
-    pendingEvent = null;
-    seenEvents.clear();
-    $("#era-slider").value = "3";
-    document.querySelectorAll("[data-scenario]").forEach(button => button.setAttribute("aria-pressed","false"));
-    $("#lab-scenario-label").textContent = "YOUR EVENING";
-    $("#lab-message").textContent = "Tap equipment to build your evening.";
-    $("#event-cue").hidden = true;
-    setEra(3);
-    closeNotice();
-  }
-
-  function wireSafety() {
-    const dialog = $("#safety-dialog");
-    $("#safety-open").addEventListener("click",() => dialog.showModal());
-    $("#safety-close").addEventListener("click",() => dialog.close());
+  function wireDialog() {
+    const dialog = $("#how-dialog");
+    $("#how-open").addEventListener("click",() => dialog.showModal());
+    $("#how-close").addEventListener("click",() => dialog.close());
     dialog.addEventListener("click",event => {if(event.target === dialog) dialog.close();});
   }
 
   function init() {
-    renderScenarios();
-    renderEquipment();
-    setEra(3);
-    $("#power-on").addEventListener("click",() => setView("#lab-stage"));
-    $("#era-slider").addEventListener("input",event => setEra(event.target.value));
-    $("#xray-toggle").addEventListener("click",() => {
-      const next = $("#lab-house").dataset.xray !== "true";
-      $("#lab-house").dataset.xray = String(next);
-      $("#xray-toggle").setAttribute("aria-pressed",String(next));
-      $("#xray-toggle").lastChild.textContent = next ? " Hide electrical X-ray" : " See behind the walls";
+    $("#best").textContent = formatScore(best);
+    $("#pause-button").disabled = true;
+    $("#start-button").addEventListener("click",startRun);
+    $("#continue-button").addEventListener("click",resumeAfterLesson);
+    $("#jump-button").addEventListener("click",jump);
+    $("#resume-button").addEventListener("click",togglePause);
+    $("#pause-button").addEventListener("click",togglePause);
+    canvas.addEventListener("pointerdown",jump);
+    window.addEventListener("keydown",event => {
+      if(["Space","ArrowUp"].includes(event.code)) {
+        event.preventDefault();
+        jump();
+      }
+      if(event.code === "KeyP" || event.code === "Escape") togglePause();
     });
-    $("#notice-close").addEventListener("click",closeNotice);
-    $("#notice-continue").addEventListener("click",closeNotice);
-    $("#notice-options").querySelectorAll("button").forEach(button => button.addEventListener("click",() => answerNotice(button.dataset.answer)));
-    $("#event-cue").addEventListener("click",openPendingEvent);
-    document.querySelectorAll("[data-console-tab]").forEach(button => {
-      button.addEventListener("click",() => {
-        document.querySelectorAll("[data-console-tab]").forEach(tab => tab.setAttribute("aria-selected",String(tab === button)));
-        document.querySelectorAll("[data-console-panel]").forEach(panel => panel.hidden = panel.dataset.consolePanel !== button.dataset.consoleTab);
-      });
+    document.addEventListener("visibilitychange",() => {
+      if(document.hidden && state === "running") togglePause();
     });
-    $("#finish-lab").addEventListener("click",buildStory);
-    $("#back-to-lab").addEventListener("click",() => setView("#lab-stage"));
-    $("#restart-lab").addEventListener("click",() => {resetLab();setView("#lab-stage");});
-    $("#reset-lab").addEventListener("click",resetLab);
-    wireSafety();
+    wireDialog();
+    renderCards();
+    updateHud();
+    requestAnimationFrame(loop);
   }
 
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded",init) : init();

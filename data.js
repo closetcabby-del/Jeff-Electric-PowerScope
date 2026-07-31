@@ -1,56 +1,47 @@
-window.POWER_LAB_DATA = {
-  eras:[
-    {year:"1975",copy:"Central air, an electric range, a dryer and basic entertainment become the evening’s major electrical story.",available:["ac","range","dryer"]},
-    {year:"1995",copy:"More televisions, computers, pool equipment and countertop appliances join the home.",available:["ac","range","dryer","pool","workshop"]},
-    {year:"2015",copy:"Home offices, larger kitchens, more electronics and specialty equipment become normal parts of daily life.",available:["ac","range","dryer","pool","workshop","heater"]},
-    {year:"Today",copy:"EV charging, batteries, generators and increasingly electrified equipment can all share the same home.",available:["ac","range","dryer","pool","ev","workshop","heater","battery"]}
-  ],
-  equipment:[
-    {id:"ac",name:"Central AC",icon:"❄",points:18,x:84,y:20,era:0},
-    {id:"range",name:"Electric range",icon:"▦",points:15,x:43,y:68,era:0},
-    {id:"dryer",name:"Electric dryer",icon:"◉",points:14,x:75,y:72,era:0},
-    {id:"pool",name:"Pool equipment",icon:"≈",points:10,x:67,y:90,era:1},
-    {id:"ev",name:"EV charger",icon:"⚡",points:24,x:86,y:69,era:3},
-    {id:"workshop",name:"Workshop",icon:"◇",points:12,x:93,y:82,era:1},
-    {id:"heater",name:"Electric heat",icon:"♨",points:22,x:52,y:37,era:2},
-    {id:"battery",name:"Backup equipment",icon:"▣",points:16,x:94,y:54,era:3}
-  ],
-  scenarios:[
-    {id:"summer",name:"100°F afternoon",icon:"☀",active:["ac","pool"],message:"The AC and pool equipment are carrying the Houston afternoon.",event:"dim"},
-    {id:"dinner",name:"Family dinner",icon:"▦",active:["ac","range"],message:"Cooling and cooking overlap during the busiest part of the evening.",event:"dim"},
-    {id:"laundry",name:"Laundry day",icon:"◉",active:["ac","dryer"],message:"The dryer joins an already-running cooling system.",event:"dim"},
-    {id:"storm",name:"Thunderstorm",icon:"ϟ",active:["ac"],message:"A Gulf Coast thunderstorm moves across the neighborhood.",event:"storm"},
-    {id:"hurricane",name:"Hurricane prep",icon:"◎",active:["ac","battery"],message:"Backup-power planning becomes part of the home’s electrical story.",event:"utility"},
-    {id:"ev-night",name:"New EV night",icon:"⚡",active:["ac","ev"],message:"An EV begins a long charging session while the home stays active.",event:"dim"}
-  ],
-  events:{
-    dim:{
-      title:"The lights dipped when equipment started.",
-      copy:"A slight, brief change can occur when a large motor starts. Repeated or pronounced changes across several rooms are worth documenting.",
-      yes:{label:"SCHEDULE AN ELECTRICIAN",title:"A professional evaluation makes sense.",copy:"Write down which lights change, what equipment starts and how often it happens. Do not remove covers or perform live testing."},
-      unsure:{label:"MONITOR",title:"Watch for a repeatable pattern.",copy:"Notice whether it affects one light or several rooms and what equipment is starting. You do not need to test anything."},
-      no:{label:"EDUCATIONAL MOMENT",title:"Now you know what to recognize.",copy:"A simulated event cannot predict what will happen in your home. Keep normal changes and repeated whole-home patterns distinct."}
+window.POWER_RUN_DATA = {
+  neighborhoods:["PASADENA","CLEAR LAKE","PEARLAND","FRIENDSWOOD","WEBSTER"],
+  hazards:[
+    {
+      id:"cord",icon:"⌁",label:"CORD UNDER RUG",
+      title:"An extension cord disappeared under a rug.",
+      copy:"Cords can be damaged or overheat when they are pinched, covered or treated like permanent wiring.",
+      rule:"Extension cords are temporary and should remain visible and undamaged.",
+      color:"#ff9f5a",width:62,height:27
     },
-    storm:{
-      title:"The storm caused a brief flicker.",
-      copy:"Storm-related voltage events and local utility interruptions are different from a problem isolated to one appliance or circuit.",
-      yes:{label:"DOCUMENT THE PATTERN",title:"Separate neighborhood events from home-only symptoms.",copy:"If nearby homes are affected, check your utility’s outage information. Stay away from damaged service equipment and downed lines."},
-      unsure:{label:"MONITOR",title:"Notice whether neighbors are affected.",copy:"That context can help distinguish a utility interruption from something limited to your home."},
-      no:{label:"EDUCATIONAL MOMENT",title:"Storm conditions can change the next step.",copy:"The utility handles grid and service-line interruptions. An electrician handles concerns within the home after utility issues are ruled out."}
+    {
+      id:"strip",icon:"•••",label:"DAISY CHAIN",
+      title:"One power strip was plugged into another.",
+      copy:"Connecting strips or extension cords together can concentrate demand and create damaged, loose or overheated connections.",
+      rule:"Plug a listed power strip directly into an appropriate wall receptacle.",
+      color:"#ffcf5a",width:58,height:35
     },
-    utility:{
-      title:"The neighborhood power disappeared.",
-      copy:"Backup equipment should use approved transfer equipment. A generator must never be improvised or used to backfeed a home.",
-      yes:{label:"PLAN PROFESSIONALLY",title:"Request backup-power planning.",copy:"Use actual equipment ratings and approved transfer equipment. Never improvise a connection or energize a home through an outlet."},
-      unsure:{label:"LEARN BEFORE BUYING",title:"Start with the equipment you want to support.",copy:"A professional can help define priorities, equipment ratings and an appropriate connection method."},
-      no:{label:"EDUCATIONAL MOMENT",title:"Backup power begins with safe transfer equipment.",copy:"This simulation does not design a generator or battery system."}
+    {
+      id:"outlet",icon:"▥",label:"WARM OUTLET",
+      title:"An outlet seemed warm during normal use.",
+      copy:"Do not touch it again to investigate. Stop using affected equipment if warmth, buzzing, discoloration or electrical odor is noticed.",
+      rule:"Heat and electrical odor deserve prompt professional attention.",
+      color:"#ff7a66",width:43,height:54
     },
-    activity:{
-      title:"Several major loads are running together.",
-      copy:"The animation is showing overlapping electrical activity—not available capacity and not a service-size calculation.",
-      yes:{label:"REQUEST A LOAD CALCULATION",title:"Plan major additions from real equipment data.",copy:"An electrician can use equipment ratings, demand factors and the existing installation to perform a professional load calculation."},
-      unsure:{label:"PLAN BEFORE INSTALLING",title:"Make a list of major existing equipment.",copy:"Bring model numbers or ratings for planned equipment to a professional. Do not rely on this illustrative score for sizing."},
-      no:{label:"EDUCATIONAL MOMENT",title:"Modern life can overlap in unexpected ways.",copy:"The number of active devices alone does not determine electrical service requirements."}
+    {
+      id:"water",icon:"≈",label:"WATER + POWER",
+      title:"Electrical equipment and water shared the same space.",
+      copy:"Never enter water or approach wet electrical equipment to investigate a tingling sensation, shock or visible damage.",
+      rule:"Shock or tingling near water is an emergency—leave the area and call 911.",
+      color:"#5bd6ff",width:72,height:28
+    },
+    {
+      id:"panel",icon:"▤",label:"BUZZING PANEL",
+      title:"The closed panel was buzzing.",
+      copy:"Do not remove the cover or perform live testing. Repeated trips, buzzing, heat, rust or electrical odor should be professionally evaluated.",
+      rule:"Observe a closed panel only. This is where an electrician takes over.",
+      color:"#f4c84a",width:48,height:62
+    },
+    {
+      id:"line",icon:"╱",label:"DOWNED LINE",
+      title:"A service line was down after a storm.",
+      copy:"Stay far away, keep everyone clear and report it to 911 and the electric utility. Never assume a downed conductor is de-energized.",
+      rule:"Downed lines are an emergency. Keep your distance.",
+      color:"#ff7067",width:84,height:48
     }
-  }
+  ]
 };
