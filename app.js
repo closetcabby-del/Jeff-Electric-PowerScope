@@ -1,178 +1,130 @@
 (() => {
   "use strict";
-  const D = window.POWER_DATA;
+  const D = window.HOME_DATA;
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let map, zipLayer, geoData, activeLayer = "age", pinnedZip = null;
+  let roomIndex = 0;
+  let activeItem = null;
+  const review = new Map();
 
-  function styleFor(code, highlighted=false) {
-    const view = D.layers[activeLayer];
-    return {
-      color:view.color,
-      fillColor:view.fill,
-      weight:highlighted || pinnedZip === code ? 3 : 1.5,
-      opacity:highlighted || pinnedZip === code ? 1 : .8,
-      fillOpacity:highlighted || pinnedZip === code ? .3 : .12,
-      dashArray:activeLayer === "code" ? "7 7" : null,
-      className:activeLayer === "code" ? "map-line" : ""
+  function buildRoomNav() {
+    $("#room-nav").innerHTML = D.rooms.map((room, index) => `
+      <button type="button" data-room="${room.id}" aria-pressed="${index === 0}">
+        <span aria-hidden="true">${room.icon}</span>
+        <small>${String(index + 1).padStart(2, "0")}</small>
+        <strong>${room.name}</strong>
+      </button>`).join("");
+    $$("#room-nav button").forEach((button, index) => {
+      button.onclick = () => selectRoom(index);
+    });
+  }
+
+  function selectRoom(index) {
+    roomIndex = (index + D.rooms.length) % D.rooms.length;
+    const room = D.rooms[roomIndex];
+    activeItem = null;
+    closePanel();
+    $("#room-step").textContent = `ROOM ${roomIndex + 1} OF ${D.rooms.length}`;
+    $("#room-title").textContent = room.name;
+    $("#room-intro").textContent = room.intro;
+    $("#room-scene").dataset.tone = room.tone;
+    $("#walk-progress").style.width = `${((roomIndex + 1) / D.rooms.length) * 100}%`;
+    $$("#room-nav button").forEach((button, i) => button.setAttribute("aria-pressed", String(i === roomIndex)));
+    $("#object-layer").innerHTML = room.items.map(item => `
+      <button class="home-object ${review.has(item.id) ? "reviewed" : ""}" type="button"
+        data-item="${item.id}" style="--x:${item.x}%;--y:${item.y}%"
+        aria-label="Explore ${item.name}">
+        <span class="object-ring"></span>
+        <span class="object-icon" aria-hidden="true">${item.icon}</span>
+        <strong>${item.name}</strong>
+      </button>`).join("");
+    $$(".home-object").forEach(button => {
+      button.onclick = () => openItem(room.items.find(item => item.id === button.dataset.item));
+    });
+  }
+
+  function openItem(item) {
+    activeItem = item;
+    $("#learn-kicker").textContent = `ROOM ${roomIndex + 1} · ${D.rooms[roomIndex].name.toUpperCase()}`;
+    $("#learn-icon").textContent = item.icon;
+    $("#learn-title").textContent = item.name;
+    $("#learn-normal").textContent = item.normal;
+    $("#learn-look").innerHTML = item.look.map(point => `<li>${point}</li>`).join("");
+    $("#learn-question").textContent = item.question;
+    $("#answer-list").innerHTML = item.options.map(([label, outcome]) => `
+      <button type="button" data-outcome="${outcome}"><span>${label}</span><span aria-hidden="true">→</span></button>`).join("");
+    $$("#answer-list button").forEach(button => {
+      button.onclick = () => recordAnswer(button.dataset.outcome, button.firstElementChild.textContent);
+    });
+    $("#guidance").hidden = true;
+    $("#observation").hidden = false;
+    $("#learn-panel").hidden = false;
+    $("#learn-panel").focus();
+  }
+
+  function recordAnswer(outcomeId, answer) {
+    const outcome = D.outcomes[outcomeId];
+    review.set(activeItem.id, {
+      room:D.rooms[roomIndex].name,
+      item:activeItem.name,
+      answer,
+      outcome:outcomeId,
+      label:outcome.label
+    });
+    $("#result-label").textContent = outcome.label;
+    $("#result-label").className = outcome.tone;
+    $("#result-title").textContent = outcome.title;
+    $("#result-copy").textContent = outcome.copy;
+    $("#observation").hidden = true;
+    $("#guidance").hidden = false;
+    $("#reviewed-count").textContent = review.size;
+    const selected = $(`.home-object[data-item="${activeItem.id}"]`);
+    if (selected) selected.classList.add("reviewed");
+  }
+
+  function closePanel() {
+    $("#learn-panel").hidden = true;
+  }
+
+  function renderSummary() {
+    $("#summary-total").textContent = review.size;
+    $("#summary-empty").hidden = review.size > 0;
+    $("#summary-list").innerHTML = [...review.values()].map(entry => `
+      <article class="summary-entry ${D.outcomes[entry.outcome].tone}">
+        <div><small>${entry.room}</small><strong>${entry.item}</strong><p>${entry.answer}</p></div>
+        <span>${entry.label}</span>
+      </article>`).join("");
+  }
+
+  function wireDialogs() {
+    const safety = $("#safety-dialog");
+    const summary = $("#summary-dialog");
+    $("#safety-open").onclick = () => safety.showModal();
+    $("#safety-close").onclick = () => safety.close();
+    $("#summary-open").onclick = () => { renderSummary(); summary.showModal(); };
+    $("#summary-close").onclick = () => summary.close();
+    [safety, summary].forEach(dialog => {
+      dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+    });
+    $("#summary-reset").onclick = () => {
+      review.clear();
+      $("#reviewed-count").textContent = "0";
+      renderSummary();
+      selectRoom(0);
     };
   }
 
-  function initMap() {
-    if (!window.L) {
-      $("#search-status").textContent = "Map tiles are unavailable. ZIP search still displays regional profiles.";
-      return;
-    }
-    map = L.map("map", {
-      zoomControl:false,
-      scrollWheelZoom:true,
-      minZoom:9,
-      maxZoom:15,
-      attributionControl:false
-    }).setView([29.625, -95.20], 10);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom:19,
-      attribution:"© OpenStreetMap contributors"
-    }).addTo(map);
-    L.control.zoom({position:"bottomright"}).addTo(map);
-    fetch("assets/southeast-houston-zips.geojson?v=map-only-1")
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => {
-        geoData = data;
-        renderZips();
-        map.fitBounds(zipLayer.getBounds(), {padding:[45,45]});
-      })
-      .catch(() => {
-        $("#search-status").textContent = "ZIP boundaries could not load. Use search to open a regional profile.";
-      });
-  }
-
-  function renderZips() {
-    if (!map || !geoData) return;
-    if (zipLayer) zipLayer.remove();
-    zipLayer = L.geoJSON(geoData, {
-      style:feature => styleFor(feature.properties.ZCTA5CE10),
-      onEachFeature:(feature, layer) => {
-        const code = feature.properties.ZCTA5CE10;
-        const z = D.zips[code];
-        if (!z) return;
-        layer.bindTooltip(`${code} · ${z.name}`, {
-          sticky:true,
-          direction:"top",
-          className:"zip-tooltip"
-        });
-        layer.on({
-          mouseover:e => {
-            e.target.setStyle(styleFor(code, true));
-            showProfile(code, e.originalEvent, false);
-          },
-          mousemove:e => positionCard(e.originalEvent),
-          mouseout:e => {
-            if (pinnedZip !== code) e.target.setStyle(styleFor(code));
-            if (!pinnedZip) closeProfile();
-          },
-          click:e => {
-            pinnedZip = code;
-            showProfile(code, e.originalEvent, true);
-            renderZips();
-          }
-        });
-      }
-    }).addTo(map);
-  }
-
-  function buildLayers() {
-    const root = $("#layer-controls");
-    Object.entries(D.layers).forEach(([id, view]) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "layer-button";
-      button.dataset.layer = id;
-      button.textContent = view.label;
-      button.setAttribute("aria-pressed", id === activeLayer);
-      button.onclick = () => {
-        activeLayer = id;
-        $$(".layer-button").forEach(b => b.setAttribute("aria-pressed", String(b === button)));
-        renderZips();
-      };
-      root.append(button);
-    });
-  }
-
-  function showProfile(code, event, pin) {
-    const z = D.zips[code];
-    if (!z) return;
-    $("#card-kicker").textContent = `ZIP ${code} · REGIONAL PROFILE`;
-    $("#card-title").textContent = z.name;
-    $("#card-era").textContent = z.era;
-    $("#card-housing").textContent = z.housing;
-    $("#card-sample").textContent = z.sample;
-    $("#card-panel").textContent = z.panel;
-    $("#card-code").textContent = z.code;
-    $("#card-hazards").innerHTML = z.hazards.map(item => `<li>${item}</li>`).join("");
-    $("#card-copy").textContent = z.copy;
-    $("#map-card").hidden = false;
-    $("#map-card").classList.toggle("pinned", pin);
-    if (event) positionCard(event);
-  }
-
-  function positionCard(event) {
-    if (!event || innerWidth <= 820 || pinnedZip) return;
-    const card = $("#map-card");
-    const rect = $(".map-app").getBoundingClientRect();
-    const width = card.offsetWidth || 390;
-    const height = card.offsetHeight || 500;
-    const x = Math.min(Math.max(18, event.clientX - rect.left + 20), rect.width - width - 18);
-    const y = Math.min(Math.max(92, event.clientY - rect.top - height / 2), rect.height - height - 20);
-    card.style.left = `${x}px`;
-    card.style.top = `${y}px`;
-    card.style.right = "auto";
-    card.style.bottom = "auto";
-  }
-
-  function closeProfile() {
-    pinnedZip = null;
-    $("#map-card").hidden = true;
-    $("#map-card").classList.remove("pinned");
-    $("#map-card").removeAttribute("style");
-    renderZips();
-  }
-
-  function initSearch() {
-    $("#location-form").addEventListener("submit", event => {
-      event.preventDefault();
-      const code = $("#location-input").value.trim();
-      const z = D.zips[code];
-      if (!z) {
-        $("#search-status").textContent = "That ZIP is not included in this Southeast Houston release.";
-        return;
-      }
-      pinnedZip = code;
-      $("#search-status").textContent = `Showing ${z.name} · ${code}`;
-      showProfile(code, null, true);
-      if (map) {
-        map.flyTo([z.lat, z.lng], 12, {animate:!reduced, duration:reduced ? 0 : 1.1});
-        renderZips();
-      }
-    });
-    $("#card-close").onclick = closeProfile;
-  }
-
-  function initDialog() {
-    const dialog = $("#method-dialog");
-    $("#method-open").onclick = () => dialog.showModal();
-    $("#method-close").onclick = () => dialog.close();
-    dialog.addEventListener("click", event => {
-      if (event.target === dialog) dialog.close();
-    });
-  }
-
   function init() {
-    buildLayers();
-    initMap();
-    initSearch();
-    initDialog();
+    buildRoomNav();
+    selectRoom(0);
+    $("#previous-room").onclick = () => selectRoom(roomIndex - 1);
+    $("#next-room").onclick = () => selectRoom(roomIndex + 1);
+    $("#learn-close").onclick = closePanel;
+    $("#answer-again").onclick = () => {
+      $("#guidance").hidden = true;
+      $("#observation").hidden = false;
+    };
+    wireDialogs();
   }
 
   document.readyState === "loading"
