@@ -1,19 +1,18 @@
-# Jeff Electric Home Signals
+# Jeff Electric Home Power Lab
 
-A cinematic, mobile-first virtual-home experience that helps homeowners recognize everyday electrical signals without tools, disassembly or live testing.
+A playable, mobile-first virtual Houston home that helps homeowners understand how everyday equipment, weather and decades of changing electrical life connect together.
 
 ## Experience
 
-- Immersive entry into a furnished, photorealistic cutaway home
-- “What brought you here?” entry choices using familiar homeowner language
-- Optional construction-era, homeowner/renter and Southeast Houston area context
-- Six guided moments: lighting changes, kitchen receptacles, breaker trips, EV charging, pool equipment and utility-side power loss
-- Environmental lighting, warmth, charging-flow and grid effects
-- One-question-at-a-time homeowner-safe guidance
-- Personalized Home Signals report grouped into monitoring, landlord/electrician, load-planning, utility and emergency next steps
-- Keyboard-accessible controls, native dialog behavior, visible focus states and reduced-motion support
+- Photorealistic cutaway home with eight interactive equipment systems
+- Houston scenario presets: 100°F afternoon, family dinner, laundry day, thunderstorm, hurricane preparation and new-EV night
+- 1975, 1995, 2015 and Today time-machine views
+- Simplified electrical X-ray with animated power pathways
+- “Wait—did you see that?” observation moments with homeowner-safe next steps
+- Personalized Home Power Story summarizing equipment and recognized situations
+- Keyboard-accessible controls, native safety dialog and reduced-motion support
 
-Home Signals is educational. It does not inspect, diagnose or determine the safety or service capacity of a property.
+Activity points, pathways and events are explicitly illustrative. Home Power Lab is not an NEC load calculation, service-sizing tool, inspection, diagnosis or safety determination.
 
 ## Run locally
 
@@ -27,7 +26,7 @@ Open `http://localhost:8080`.
 
 ## Deploy
 
-The included GitHub Actions workflow publishes this static site on every push to `main`.
+The GitHub Actions workflow publishes the static site on every push to `main`.
 
 1. Open **Settings → Pages**.
 2. Set **Source** to **GitHub Actions**.
@@ -37,6 +36,6 @@ Live URL: `https://closetcabby-del.github.io/Jeff-Electric-PowerScope/`
 
 ## Safety
 
-The experience never directs a visitor to remove covers, touch exposed conductors, test live wiring, disassemble electrical equipment or perform energized work.
+The experience never directs visitors to remove covers, touch exposed conductors, test live wiring, disassemble electrical equipment or perform energized work.
 
-Active smoke, fire, arcing, shock near water, downed lines or immediate danger routes the visitor to leave the area and call 911. The guide does not replace emergency services, the electric utility, appliance service or a licensed electrician.
+Active smoke, fire, arcing, shock near water, downed lines or immediate danger requires leaving the area and calling 911. The experience does not replace emergency services, the electric utility, appliance service or a licensed electrician.

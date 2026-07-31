@@ -4,143 +4,122 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#050608">
-  <meta name="description" content="Enter a cinematic virtual home and learn to recognize electrical signals safely with Jeff Electric.">
-  <meta property="og:title" content="Home Signals | Jeff Electric">
-  <meta property="og:description" content="Your home speaks in signals. Learn what they may mean—and what to do next.">
+  <meta name="description" content="Experiment with a playable virtual Houston home and learn how modern electrical life fits together with Jeff Electric Home Power Lab.">
+  <meta property="og:title" content="Home Power Lab | Jeff Electric">
+  <meta property="og:description" content="What happens when yesterday’s home powers today’s life? Turn on the house and explore.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/social-card.svg">
-  <title>Home Signals | Jeff Electric</title>
+  <title>Home Power Lab | Jeff Electric</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=home-signals-2">
-  <script src="data.js?v=home-signals-2" defer></script>
-  <script src="app.js?v=home-signals-2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=power-lab-1">
+  <script src="data.js?v=power-lab-1" defer></script>
+  <script src="app.js?v=power-lab-1" defer></script>
 </head>
-<body class="story-mode">
-  <a class="skip-link" href="#story">Skip to the walkthrough</a>
-  <main id="story" class="signal-app">
-    <header class="signal-header">
-      <a class="signal-brand" href="./" aria-label="Jeff Electric Home Signals home">
-        <span aria-hidden="true">ϟ</span>
-        <strong>JEFF ELECTRIC</strong>
-      </a>
-      <button id="safety-open" class="signal-text-button" type="button">Safety</button>
+<body class="lab-mode">
+  <a class="skip-link" href="#power-lab">Skip to Home Power Lab</a>
+  <main id="power-lab" class="power-lab">
+    <header class="lab-header">
+      <a class="signal-brand" href="./" aria-label="Jeff Electric Home Power Lab home"><span aria-hidden="true">ϟ</span><strong>JEFF ELECTRIC</strong></a>
+      <div><span>HOME POWER LAB</span><button id="safety-open" class="signal-text-button" type="button">Safety</button></div>
     </header>
 
-    <section id="welcome" class="welcome-screen" aria-labelledby="welcome-title">
-      <div class="room-scene welcome-house" aria-hidden="true"></div>
-      <div class="welcome-copy">
-        <p class="signal-eyebrow">AN INTERACTIVE HOMEOWNER EXPERIENCE</p>
-        <h1 id="welcome-title">Your home speaks<br>in <em>signals.</em></h1>
-        <p>Your home doesn’t send notifications. It gives you little signals. Walk through a Southeast Houston home and see which ones you recognize.</p>
-        <button id="enter-home" class="enter-button" type="button">
-          <span>What brought you here?</span><span aria-hidden="true">→</span>
-        </button>
-        <small>About 3 minutes · Observe only · No tools</small>
+    <section id="lab-intro" class="lab-intro" aria-labelledby="lab-title">
+      <div class="room-scene lab-intro-house" aria-hidden="true"></div>
+      <div class="lab-intro-copy">
+        <p class="signal-eyebrow">A PLAYABLE HOUSTON HOME</p>
+        <h1 id="lab-title">What happens when yesterday’s home powers <em>today’s life?</em></h1>
+        <p>Turn things on. Change the year. Bring in a Houston storm. Then see how every part of modern life connects back to one home.</p>
+        <button id="power-on" class="enter-button" type="button"><span>Turn the house on</span><span aria-hidden="true">ϟ</span></button>
+        <small>Interactive education · Not a load calculation · About 3 minutes</small>
       </div>
-      <div class="welcome-cue" aria-hidden="true"><i></i><span>HOUSTON / NIGHT</span></div>
     </section>
 
-    <section id="intake" class="signal-intake" hidden aria-labelledby="intake-title">
-      <div class="intake-wrap">
-        <button id="intake-back" class="intake-back" type="button">← Back</button>
-        <p class="signal-eyebrow">START WITH WHAT’S HAPPENING</p>
-        <h1 id="intake-title">What brought you here?</h1>
-        <p class="intake-lede">Choose the moment that feels closest. There’s no diagnosis here—just a clearer, safer next step.</p>
-        <div id="concern-options" class="concern-grid" role="group" aria-label="Reason for visiting">
-          <button type="button" data-concern="lights"><span>✦</span><strong>My lights flicker or dim</strong><small>Especially when the AC starts</small></button>
-          <button type="button" data-concern="panel"><span>▤</span><strong>A breaker keeps tripping</strong><small>I want to know what that means</small></button>
-          <button type="button" data-concern="kitchen-outlet"><span>▥</span><strong>An outlet seems warm</strong><small>Or it buzzes or looks different</small></button>
-          <button type="button" data-concern="ev"><span>⚡</span><strong>I’m adding something big</strong><small>EV charger, generator or appliance</small></button>
-          <button type="button" data-concern="pool"><span>≈</span><strong>I have a pool or hot tub</strong><small>I want to know what to watch for</small></button>
-          <button type="button" data-concern="learn"><span>⌂</span><strong>I’m just learning</strong><small>Show me around the whole home</small></button>
-        </div>
+    <section id="lab-stage" class="lab-stage" hidden aria-live="polite">
+      <div class="lab-status">
+        <div><span id="lab-scenario-label">YOUR EVENING</span><strong id="lab-message">Tap equipment to build your evening.</strong></div>
+        <div class="activity-readout"><span>ILLUSTRATIVE ACTIVITY</span><strong id="activity-value">0</strong><small>/ 100</small></div>
+        <button id="finish-lab" type="button">My Power Story →</button>
+      </div>
 
-        <div id="home-context" class="home-context" hidden>
-          <div class="context-heading"><div><p class="signal-eyebrow">MAKE IT FEEL LIKE YOUR HOME</p><h2>One quick detail.</h2></div><span>Optional</span></div>
-          <div class="context-fields">
-            <label>Home age
-              <select id="home-era">
-                <option value="">Not sure</option>
-                <option value="before-1980">Built before 1980</option>
-                <option value="1980-1999">Built 1980–1999</option>
-                <option value="2000-2015">Built 2000–2015</option>
-                <option value="after-2015">Built after 2015</option>
-              </select>
-            </label>
-            <label>Living situation
-              <select id="home-role">
-                <option value="homeowner">I own the home</option>
-                <option value="renter">I rent the home</option>
-                <option value="landlord">I manage the property</option>
-              </select>
-            </label>
-            <label>ZIP or area
-              <select id="home-area">
-                <option value="Southeast Houston">Southeast Houston</option>
-                <option value="Pasadena">Pasadena / 77502</option>
-                <option value="Clear Lake">Clear Lake / 77058</option>
-                <option value="Pearland">Pearland / 77581</option>
-                <option value="Friendswood">Friendswood / 77546</option>
-                <option value="Webster">Webster / 77598</option>
-              </select>
-            </label>
+      <div id="lab-house" class="room-scene lab-house" data-xray="false" data-event="none">
+        <div class="house-shade" aria-hidden="true"></div>
+        <svg class="power-network" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <filter id="network-glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <path class="service-line" d="M28 450 L130 410 L190 365"/>
+          <path data-path="ac" d="M190 365 L395 280 L850 130"/>
+          <path data-path="range" d="M190 365 L420 390"/>
+          <path data-path="dryer" d="M190 365 L760 405"/>
+          <path data-path="pool" d="M190 365 L680 505"/>
+          <path data-path="ev" d="M190 365 L865 390"/>
+          <path data-path="workshop" d="M190 365 L905 455"/>
+          <path data-path="heater" d="M190 365 L530 215"/>
+          <path data-path="battery" d="M190 365 L925 310"/>
+          <circle class="panel-node" cx="190" cy="365" r="9"/>
+        </svg>
+        <div id="era-ghosts" class="era-ghosts" aria-hidden="true"></div>
+        <div id="device-layer" class="device-layer"></div>
+        <button id="xray-toggle" class="xray-toggle" type="button" aria-pressed="false"><span aria-hidden="true">⌁</span> See behind the walls</button>
+        <div class="lab-caption"><i></i><span id="lab-caption">Electricity enters through the service equipment and branches throughout the home.</span></div>
+      </div>
+
+      <section class="lab-console" aria-label="Home Power Lab controls">
+        <div class="console-row scenario-row">
+          <div class="console-label"><span>01</span><strong>Choose a Houston moment</strong></div>
+          <div id="scenario-buttons" class="scenario-buttons"></div>
+        </div>
+        <div class="console-row time-row">
+          <div class="console-label"><span>02</span><strong>Move through time</strong></div>
+          <div class="time-control">
+            <input id="era-slider" type="range" min="0" max="3" step="1" value="3" aria-label="Home electrical era">
+            <div><span>1975</span><span>1995</span><span>2015</span><span>Today</span></div>
           </div>
-          <button id="begin-walkthrough" class="enter-button" type="button"><span>Walk through my home</span><span aria-hidden="true">→</span></button>
-          <small>Broad educational context only. This does not access property records.</small>
+          <p id="era-copy"></p>
         </div>
-      </div>
-    </section>
-
-    <section id="walkthrough" class="walkthrough" hidden aria-live="polite">
-      <div class="story-hud">
-        <div><span id="step-label">SIGNAL 01</span><strong id="signal-name"></strong></div>
-        <div class="story-progress" aria-label="Walkthrough progress"><i id="story-progress-bar"></i></div>
-        <button id="exit-tour" type="button">Exit</button>
-      </div>
-
-      <div id="signal-scene" class="room-scene signal-scene">
-        <div id="atmosphere" class="atmosphere" aria-hidden="true"></div>
-        <button id="signal-hotspot" class="signal-hotspot" type="button" aria-label="Explore this home signal">
-          <span class="signal-radar" aria-hidden="true"></span>
-          <span id="hotspot-icon" class="hotspot-icon" aria-hidden="true"></span>
-          <strong id="hotspot-label"></strong>
-          <small>Tap to notice</small>
-        </button>
-        <div class="scene-direction"><i></i><span id="scene-direction-text"></span></div>
-      </div>
-
-      <aside id="signal-card" class="signal-card" hidden aria-labelledby="card-title">
-        <button id="card-close" type="button" aria-label="Close signal card">×</button>
-        <p id="card-kicker" class="signal-eyebrow"></p>
-        <h2 id="card-title"></h2>
-        <p id="card-intro" class="card-intro"></p>
-        <div class="signal-answer">
-          <h3 id="card-question"></h3>
-          <div id="card-options"></div>
+        <div class="console-row equipment-row">
+          <div class="console-label"><span>03</span><strong>Build your evening</strong></div>
+          <div id="equipment-buttons" class="equipment-buttons"></div>
+          <button id="reset-lab" class="console-reset" type="button">Reset</button>
         </div>
-        <div id="signal-guidance" class="signal-guidance" hidden>
-          <span id="guidance-label"></span>
-          <h3 id="guidance-title"></h3>
-          <p id="guidance-copy"></p>
-          <button id="continue-tour" class="continue-button" type="button">Continue through the house <span aria-hidden="true">→</span></button>
+        <p class="lab-method">Activity points and animation are illustrative educational signals—not measurements, an NEC load calculation, service sizing, or a determination that any home is safe or unsafe.</p>
+      </section>
+
+      <aside id="notice-card" class="notice-card" hidden aria-labelledby="notice-title">
+        <button id="notice-close" type="button" aria-label="Close observation">×</button>
+        <p class="signal-eyebrow">WAIT—DID YOU SEE THAT?</p>
+        <h2 id="notice-title"></h2>
+        <p id="notice-copy"></p>
+        <h3>Does this happen in your home?</h3>
+        <div id="notice-options">
+          <button type="button" data-answer="yes">Yes, I recognize it</button>
+          <button type="button" data-answer="unsure">I’m not sure</button>
+          <button type="button" data-answer="no">No, I’m just exploring</button>
+        </div>
+        <div id="notice-guidance" hidden>
+          <span id="notice-label"></span>
+          <h3 id="notice-guidance-title"></h3>
+          <p id="notice-guidance-copy"></p>
+          <button id="notice-continue" class="continue-button" type="button">Keep experimenting →</button>
         </div>
       </aside>
     </section>
 
-    <section id="report" class="signal-report" hidden aria-labelledby="report-title">
-      <div class="report-wrap">
-        <p class="signal-eyebrow">YOUR HOME SIGNALS</p>
-        <h1 id="report-title">Here’s what your home may be asking for.</h1>
-        <p id="report-context" class="report-context"></p>
-        <p class="report-lede">You don’t need to understand electricity. You just need to recognize when your home is asking for attention.</p>
-        <div id="report-groups" class="report-groups"></div>
-        <div class="report-meter"><i id="report-ring"></i><div><strong id="report-count">0</strong><span>signals explored</span></div></div>
-        <div id="report-list" class="report-list"></div>
-        <div class="report-actions">
-          <button id="restart-tour" class="enter-button" type="button"><span>Walk through again</span><span aria-hidden="true">↻</span></button>
-          <button id="print-report" class="signal-text-button" type="button">Print / save report</button>
+    <section id="power-story" class="power-story" hidden aria-labelledby="story-title">
+      <div class="story-wrap">
+        <p class="signal-eyebrow">YOUR HOME POWER STORY</p>
+        <h1 id="story-title">This is the life your home is powering.</h1>
+        <p id="story-summary" class="story-summary"></p>
+        <div class="story-house">
+          <div id="story-devices" class="story-devices"></div>
+          <div class="story-core"><span>ϟ</span><strong id="story-activity">0</strong><small>illustrative activity</small></div>
         </div>
-        <p class="report-disclaimer">Educational guidance only—not an inspection, diagnosis, safety determination or electrical load calculation. Major new loads should be evaluated with a professional load calculation.</p>
+        <div id="story-observations" class="story-observations"></div>
+        <div class="story-actions">
+          <button id="back-to-lab" class="enter-button" type="button"><span>Keep experimenting</span><span aria-hidden="true">←</span></button>
+          <button id="restart-lab" class="signal-text-button" type="button">Start over</button>
+        </div>
+        <p class="report-disclaimer">Home Power Lab is educational and does not inspect, diagnose, calculate or determine the safety or capacity of a property. Major equipment should be planned using actual ratings and a professional load calculation.</p>
       </div>
     </section>
 
@@ -148,18 +127,15 @@
   </main>
 
   <dialog id="safety-dialog" aria-labelledby="safety-title">
-    <div class="dialog-head">
-      <div><p class="signal-eyebrow">BEFORE YOU BEGIN</p><h2 id="safety-title">Observe. Don’t investigate.</h2></div>
-      <button id="safety-close" type="button" aria-label="Close safety guidance">×</button>
-    </div>
+    <div class="dialog-head"><div><p class="signal-eyebrow">SAFE EXPLORATION</p><h2 id="safety-title">Observe. Don’t investigate.</h2></div><button id="safety-close" type="button" aria-label="Close safety guidance">×</button></div>
     <div class="dialog-body">
       <ul class="rule-list">
         <li>Never remove a panel, switch or outlet cover.</li>
         <li>Never touch exposed conductors or test live wiring.</li>
-        <li>Never disassemble an outlet, connection or appliance.</li>
-        <li>Keep away from downed lines, damaged meters and electrical equipment near water.</li>
+        <li>Never disassemble electrical equipment or perform energized work.</li>
+        <li>Stay away from downed lines, damaged meters and electrical equipment near water.</li>
       </ul>
-      <p><strong>Active smoke, fire, arcing or immediate danger:</strong> leave the area and call 911. This guide does not replace emergency services, your utility or a licensed electrician.</p>
+      <p><strong>Active smoke, fire, arcing or immediate danger:</strong> leave the area and call 911. This experience does not replace emergency services, your utility or a licensed electrician.</p>
     </div>
   </dialog>
 </body>

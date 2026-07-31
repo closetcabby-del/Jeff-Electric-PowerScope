@@ -1,97 +1,56 @@
-window.SIGNAL_DATA = {
-  signals: [
-    {
-      id:"lights", room:"Living room", number:"01", name:"Why do my lights dim when the AC starts?",
-      icon:"✦", x:61, y:23, size:"185%", position:"63% 66%", effect:"dim",
-      direction:"It’s a 100°F Houston afternoon. The air conditioner starts.",
-      title:"The AC starts—and the room dips.",
-      intro:"A brief, slight change can happen when a large motor starts. That does not automatically mean something is wrong. If several lights repeatedly or noticeably change together, write down the pattern and arrange an evaluation.",
-      question:"What are you noticing at home?",
-      options:[
-        ["One lamp or bulb acts differently","appliance"],
-        ["Several lights dim or flicker together","electrician"],
-        ["A switch buzzes, shocks or feels warm","priority"],
-        ["Nothing unusual—I’m learning","routine"]
-      ]
-    },
-    {
-      id:"kitchen-outlet", room:"Kitchen", number:"02", name:"This outlet seems warm. Is that normal?",
-      icon:"▥", x:29, y:57, size:"185%", position:"35% 66%", effect:"warm",
-      direction:"Dinner is cooking. One kitchen receptacle seems different.",
-      title:"Something about this outlet changed.",
-      intro:"Never touch an outlet to check for heat. If warmth was noticed during normal use, or there is buzzing, discoloration or odor, stop using the affected equipment.",
-      question:"Which observation is closest?",
-      options:[
-        ["A GFCI will not reset or trips repeatedly","electrician"],
-        ["Warmth, buzzing or discoloration was noticed","priority"],
-        ["Smoke, sparks or a burning odor","emergency"],
-        ["Nothing unusual—I’m learning","routine"]
-      ]
-    },
-    {
-      id:"panel", room:"Entry & electrical", number:"03", name:"Why does this breaker keep tripping?",
-      icon:"▤", x:21, y:48, size:"190%", position:"4% 66%", effect:"pulse",
-      direction:"The microwave and another appliance are running. The power stops again.",
-      title:"The same breaker interrupted power again.",
-      intro:"Repeated trips are a reason to understand the circuit and connected equipment. Do not hold a breaker on, remove the cover or perform live testing.",
-      question:"What can you observe from the closed panel?",
-      options:[
-        ["One trip tied to one malfunctioning appliance","appliance"],
-        ["The same breaker trips repeatedly","electrician"],
-        ["Buzzing, rust, warmth or discoloration","priority"],
-        ["Smoke, arcing or a burning odor","emergency"]
-      ]
-    },
-    {
-      id:"ev", room:"Garage", number:"04", name:"Can my home handle an EV charger?",
-      icon:"⚡", x:54, y:46, size:"185%", position:"96% 65%", effect:"charge",
-      direction:"A new EV arrives beside the dryer and workshop equipment.",
-      title:"Your daily routine is adding a major load.",
-      intro:"EV charging, generators, electric ranges and other major equipment can change how a home uses power. Planning should use actual equipment ratings, demand factors and existing loads—not a quick online score.",
-      question:"What stage are you in?",
-      options:[
-        ["Learning before choosing a charger","load"],
-        ["Planning an installation","load"],
-        ["An existing charger trips or becomes warm","priority"],
-        ["Smoke, arcing or immediate danger","emergency"]
-      ]
-    },
-    {
-      id:"pool", room:"Backyard", number:"05", name:"What should I watch for around my pool?",
-      icon:"≈", x:34, y:61, size:"118%", position:"50% 100%", effect:"water",
-      direction:"After Houston heat and heavy rain, the pool equipment starts.",
-      title:"Water changes what “checking it” safely means.",
-      intro:"Pool and hot-tub systems depend on appropriate GFCI protection, bonding and professional installation. Never enter water to investigate an electrical symptom.",
-      question:"What was noticed?",
-      options:[
-        ["Planning a pool, hot tub or equipment change","load"],
-        ["Protection trips or equipment looks corroded","priority"],
-        ["Any shock or tingling sensation near water","emergency"],
-        ["Nothing unusual—I’m learning","routine"]
-      ]
-    },
-    {
-      id:"meter", room:"Outside service", number:"06", name:"Half my house lost power. Who do I call?",
-      icon:"◉", x:77, y:40, size:"132%", position:"14% 72%", effect:"grid",
-      direction:"A thunderstorm passes. Several rooms lose power at once.",
-      title:"This may be bigger than one circuit.",
-      intro:"Partial or widespread power loss, damaged service equipment and downed conductors may involve the electric utility rather than a circuit inside the home.",
-      question:"What best describes the situation?",
-      options:[
-        ["Neighbors also appear to have lost power","utility"],
-        ["Only part of my home has power","utility"],
-        ["A downed line or damaged meter is visible","emergency"],
-        ["Nothing unusual—I’m learning","routine"]
-      ]
-    }
+window.POWER_LAB_DATA = {
+  eras:[
+    {year:"1975",copy:"Central air, an electric range, a dryer and basic entertainment become the evening’s major electrical story.",available:["ac","range","dryer"]},
+    {year:"1995",copy:"More televisions, computers, pool equipment and countertop appliances join the home.",available:["ac","range","dryer","pool","workshop"]},
+    {year:"2015",copy:"Home offices, larger kitchens, more electronics and specialty equipment become normal parts of daily life.",available:["ac","range","dryer","pool","workshop","heater"]},
+    {year:"Today",copy:"EV charging, batteries, generators and increasingly electrified equipment can all share the same home.",available:["ac","range","dryer","pool","ev","workshop","heater","battery"]}
   ],
-  outcomes: {
-    routine:{label:"MONITOR",title:"Keep it on your awareness list.",copy:"Nothing in that selection points to a specific electrical problem. Continue normal use and pay attention if the pattern becomes stronger, happens more often or spreads to other equipment.",tone:"good"},
-    appliance:{label:"CHECK THE APPLIANCE",title:"The equipment may be the first clue.",copy:"Stop using it if its cord, plug or receptacle becomes damaged, warm, smoky or produces a burning odor. Follow the manufacturer’s guidance or contact appliance service.",tone:"neutral"},
-    electrician:{label:"SCHEDULE AN ELECTRICIAN",title:"This is where an electrician should take over.",copy:"Write down what happened, when it happened and which equipment was running. That information is useful. Do not remove covers, touch wiring or perform energized testing.",tone:"attention"},
-    priority:{label:"STOP & ARRANGE SERVICE",title:"Avoid using the affected equipment.",copy:"Repeated trips, heat, buzzing, corrosion, damage or electrical odors deserve prompt professional attention. Do not open or disassemble anything.",tone:"warning"},
-    utility:{label:"CONTACT THE UTILITY",title:"Keep clear of service equipment.",copy:"Report partial or widespread loss of power, damaged meters, service-line concerns or tree contact to the utility. Stay away from downed conductors.",tone:"attention"},
-    load:{label:"PLAN THE LOAD",title:"Request a professional load calculation.",copy:"Major equipment should be planned from actual ratings, demand factors and applicable code. This experience does not size an electrical service.",tone:"neutral"},
-    emergency:{label:"IMMEDIATE DANGER",title:"Leave the area and call 911.",copy:"For active smoke, fire, arcing, shock near water, downed lines or immediate danger, move everyone to safety and call 911. This guide does not replace emergency services.",tone:"danger"}
+  equipment:[
+    {id:"ac",name:"Central AC",icon:"❄",points:18,x:84,y:20,era:0},
+    {id:"range",name:"Electric range",icon:"▦",points:15,x:43,y:68,era:0},
+    {id:"dryer",name:"Electric dryer",icon:"◉",points:14,x:75,y:72,era:0},
+    {id:"pool",name:"Pool equipment",icon:"≈",points:10,x:67,y:90,era:1},
+    {id:"ev",name:"EV charger",icon:"⚡",points:24,x:86,y:69,era:3},
+    {id:"workshop",name:"Workshop",icon:"◇",points:12,x:93,y:82,era:1},
+    {id:"heater",name:"Electric heat",icon:"♨",points:22,x:52,y:37,era:2},
+    {id:"battery",name:"Backup equipment",icon:"▣",points:16,x:94,y:54,era:3}
+  ],
+  scenarios:[
+    {id:"summer",name:"100°F afternoon",icon:"☀",active:["ac","pool"],message:"The AC and pool equipment are carrying the Houston afternoon.",event:"dim"},
+    {id:"dinner",name:"Family dinner",icon:"▦",active:["ac","range"],message:"Cooling and cooking overlap during the busiest part of the evening.",event:"dim"},
+    {id:"laundry",name:"Laundry day",icon:"◉",active:["ac","dryer"],message:"The dryer joins an already-running cooling system.",event:"dim"},
+    {id:"storm",name:"Thunderstorm",icon:"ϟ",active:["ac"],message:"A Gulf Coast thunderstorm moves across the neighborhood.",event:"storm"},
+    {id:"hurricane",name:"Hurricane prep",icon:"◎",active:["ac","battery"],message:"Backup-power planning becomes part of the home’s electrical story.",event:"utility"},
+    {id:"ev-night",name:"New EV night",icon:"⚡",active:["ac","ev"],message:"An EV begins a long charging session while the home stays active.",event:"dim"}
+  ],
+  events:{
+    dim:{
+      title:"The lights dipped when equipment started.",
+      copy:"A slight, brief change can occur when a large motor starts. Repeated or pronounced changes across several rooms are worth documenting.",
+      yes:{label:"SCHEDULE AN ELECTRICIAN",title:"A professional evaluation makes sense.",copy:"Write down which lights change, what equipment starts and how often it happens. Do not remove covers or perform live testing."},
+      unsure:{label:"MONITOR",title:"Watch for a repeatable pattern.",copy:"Notice whether it affects one light or several rooms and what equipment is starting. You do not need to test anything."},
+      no:{label:"EDUCATIONAL MOMENT",title:"Now you know what to recognize.",copy:"A simulated event cannot predict what will happen in your home. Keep normal changes and repeated whole-home patterns distinct."}
+    },
+    storm:{
+      title:"The storm caused a brief flicker.",
+      copy:"Storm-related voltage events and local utility interruptions are different from a problem isolated to one appliance or circuit.",
+      yes:{label:"DOCUMENT THE PATTERN",title:"Separate neighborhood events from home-only symptoms.",copy:"If nearby homes are affected, check your utility’s outage information. Stay away from damaged service equipment and downed lines."},
+      unsure:{label:"MONITOR",title:"Notice whether neighbors are affected.",copy:"That context can help distinguish a utility interruption from something limited to your home."},
+      no:{label:"EDUCATIONAL MOMENT",title:"Storm conditions can change the next step.",copy:"The utility handles grid and service-line interruptions. An electrician handles concerns within the home after utility issues are ruled out."}
+    },
+    utility:{
+      title:"The neighborhood power disappeared.",
+      copy:"Backup equipment should use approved transfer equipment. A generator must never be improvised or used to backfeed a home.",
+      yes:{label:"PLAN PROFESSIONALLY",title:"Request backup-power planning.",copy:"Use actual equipment ratings and approved transfer equipment. Never improvise a connection or energize a home through an outlet."},
+      unsure:{label:"LEARN BEFORE BUYING",title:"Start with the equipment you want to support.",copy:"A professional can help define priorities, equipment ratings and an appropriate connection method."},
+      no:{label:"EDUCATIONAL MOMENT",title:"Backup power begins with safe transfer equipment.",copy:"This simulation does not design a generator or battery system."}
+    },
+    activity:{
+      title:"Several major loads are running together.",
+      copy:"The animation is showing overlapping electrical activity—not available capacity and not a service-size calculation.",
+      yes:{label:"REQUEST A LOAD CALCULATION",title:"Plan major additions from real equipment data.",copy:"An electrician can use equipment ratings, demand factors and the existing installation to perform a professional load calculation."},
+      unsure:{label:"PLAN BEFORE INSTALLING",title:"Make a list of major existing equipment.",copy:"Bring model numbers or ratings for planned equipment to a professional. Do not rely on this illustrative score for sizing."},
+      no:{label:"EDUCATIONAL MOMENT",title:"Modern life can overlap in unexpected ways.",copy:"The number of active devices alone does not determine electrical service requirements."}
+    }
   }
 };

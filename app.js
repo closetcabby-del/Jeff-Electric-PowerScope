@@ -1,181 +1,204 @@
 (() => {
   "use strict";
-  const D = window.SIGNAL_DATA;
+  const D = window.POWER_LAB_DATA;
   const $ = selector => document.querySelector(selector);
-  let index = 0;
-  let answers = [];
-  let activeSignal = null;
-  let concern = "learn";
-  let tourSignals = [...D.signals];
-  let profile = {era:"", role:"homeowner", area:"Southeast Houston"};
+  let eraIndex = 3;
+  let active = new Set();
+  let observations = [];
+  let selectedScenario = null;
+  let currentEvent = null;
+  let eventSource = "";
+  const seenEvents = new Set();
 
   function setView(view) {
-    ["#welcome", "#intake", "#walkthrough", "#report"].forEach(id => {
-      $(id).hidden = id !== view;
+    ["#lab-intro","#lab-stage","#power-story"].forEach(id => $(id).hidden = id !== view);
+    document.body.dataset.labView = view.slice(1);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function renderEquipment() {
+    $("#equipment-buttons").innerHTML = D.equipment.map(item => `
+      <button type="button" data-device="${item.id}" aria-pressed="${active.has(item.id)}">
+        <span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong><small>+${item.points}</small>
+      </button>`).join("");
+    $("#device-layer").innerHTML = D.equipment.map(item => `
+      <button type="button" class="lab-device" data-device="${item.id}" aria-pressed="${active.has(item.id)}"
+        style="--device-x:${item.x}%;--device-y:${item.y}%" aria-label="Toggle ${item.name}">
+        <span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong>
+      </button>`).join("");
+    bindDeviceButtons();
+    updateAvailability();
+    updateHouse();
+  }
+
+  function renderScenarios() {
+    $("#scenario-buttons").innerHTML = D.scenarios.map(item => `
+      <button type="button" data-scenario="${item.id}" aria-pressed="false"><span aria-hidden="true">${item.icon}</span>${item.name}</button>`).join("");
+    $("#scenario-buttons").querySelectorAll("button").forEach(button => {
+      button.addEventListener("click", () => applyScenario(button.dataset.scenario));
     });
-    document.body.dataset.view = view.slice(1);
-    window.scrollTo({top:0, behavior:"smooth"});
   }
 
-  function chooseConcern(button) {
-    concern = button.dataset.concern;
-    document.querySelectorAll("#concern-options button").forEach(option => {
-      option.setAttribute("aria-pressed", String(option === button));
+  function bindDeviceButtons() {
+    document.querySelectorAll("[data-device]").forEach(button => {
+      button.addEventListener("click", () => toggleDevice(button.dataset.device));
     });
-    $("#home-context").hidden = false;
-    $("#home-context").scrollIntoView({behavior:"smooth", block:"nearest"});
   }
 
-  function buildTour() {
-    const chosen = D.signals.find(signal => signal.id === concern);
-    tourSignals = chosen ? [chosen, ...D.signals.filter(signal => signal.id !== concern)] : [...D.signals];
-  }
-
-  function loadSignal(nextIndex) {
-    index = nextIndex;
-    activeSignal = tourSignals[index];
-    const scene = $("#signal-scene");
-    $("#step-label").textContent = `MOMENT ${String(index + 1).padStart(2, "0")} / ${String(tourSignals.length).padStart(2, "0")}`;
-    $("#signal-name").textContent = activeSignal.name;
-    $("#story-progress-bar").style.width = `${((index + 1) / tourSignals.length) * 100}%`;
-    $("#hotspot-icon").textContent = activeSignal.icon;
-    $("#hotspot-label").textContent = activeSignal.room;
-    $("#scene-direction-text").textContent = activeSignal.direction;
-    scene.style.setProperty("--scene-size", activeSignal.size);
-    scene.style.setProperty("--scene-position", activeSignal.position);
-    scene.style.setProperty("--hotspot-x", `${activeSignal.x}%`);
-    scene.style.setProperty("--hotspot-y", `${activeSignal.y}%`);
-    scene.dataset.effect = activeSignal.effect;
-    $("#signal-card").hidden = true;
-    $("#signal-guidance").hidden = true;
-    $(".signal-answer").hidden = false;
-    $("#signal-hotspot").focus({preventScroll:true});
-  }
-
-  function openSignal() {
-    $("#card-kicker").textContent = `${activeSignal.room.toUpperCase()} · ${profile.area.toUpperCase()}`;
-    $("#card-title").textContent = activeSignal.title;
-    $("#card-intro").textContent = activeSignal.intro;
-    $("#card-question").textContent = activeSignal.question;
-    $("#card-options").innerHTML = activeSignal.options.map(([label, outcome]) =>
-      `<button type="button" data-outcome="${outcome}"><span>${label}</span><span aria-hidden="true">→</span></button>`
-    ).join("");
-    $("#card-options").querySelectorAll("button").forEach(button => {
-      button.addEventListener("click", () => chooseAnswer(button.dataset.outcome, button.firstElementChild.textContent));
+  function updateAvailability() {
+    const allowed = new Set(D.eras[eraIndex].available);
+    document.querySelectorAll("[data-device]").forEach(button => {
+      const disabled = !allowed.has(button.dataset.device);
+      button.disabled = disabled;
+      button.setAttribute("aria-disabled", String(disabled));
     });
-    $("#signal-card").hidden = false;
-    $("#card-close").focus();
   }
 
-  function chooseAnswer(outcomeId, answer) {
-    const outcome = D.outcomes[outcomeId];
-    answers[index] = {signal:activeSignal.name, room:activeSignal.room, answer, outcome:outcomeId};
-    $("#guidance-label").textContent = outcome.label;
-    $("#guidance-label").className = outcome.tone;
-    $("#guidance-title").textContent = outcome.title;
-    $("#guidance-copy").textContent = outcome.copy;
-    $(".signal-answer").hidden = true;
-    $("#signal-guidance").hidden = false;
-    $("#continue-tour").innerHTML = index === tourSignals.length - 1
-      ? `Show me what to do next <span aria-hidden="true">→</span>`
-      : `Keep walking <span aria-hidden="true">→</span>`;
-    $("#continue-tour").focus();
+  function activityScore() {
+    return Math.min(100,D.equipment.filter(item => active.has(item.id)).reduce((sum,item) => sum + item.points,0));
   }
 
-  function contextSentence() {
-    const eraLabels = {
-      "before-1980":"a home built before 1980",
-      "1980-1999":"a home built between 1980 and 1999",
-      "2000-2015":"a home built between 2000 and 2015",
-      "after-2015":"a home built after 2015"
-    };
-    const roleLabels = {
-      homeowner:"homeowner",
-      renter:"renter",
-      landlord:"property manager"
-    };
-    const home = eraLabels[profile.era] || "a home with an unknown construction era";
-    return `A personalized educational summary for a ${roleLabels[profile.role]} in ${profile.area}, based on selections for ${home}.`;
+  function updateHouse() {
+    const score = activityScore();
+    $("#activity-value").textContent = score;
+    $("#lab-house").style.setProperty("--activity",`${score}%`);
+    document.querySelectorAll("[data-device]").forEach(button => {
+      button.setAttribute("aria-pressed",String(active.has(button.dataset.device)));
+    });
+    document.querySelectorAll(".power-network [data-path]").forEach(path => {
+      path.classList.toggle("is-live",active.has(path.dataset.path));
+    });
+    $("#lab-caption").textContent = active.size
+      ? `${active.size} system${active.size === 1 ? "" : "s"} active. The glowing routes are simplified educational pathways.`
+      : "Electricity enters through the service equipment and branches throughout the home.";
+    if(score >= 55 && !seenEvents.has("activity")) triggerEvent("activity","Your equipment mix");
   }
 
-  function renderOutcomeGroups(entries) {
-    const buckets = [
-      {title:"Things you can keep watching", ids:["routine","appliance"]},
-      {title:profile.role === "renter" ? "Things to document for your landlord" : "Things to discuss with an electrician", ids:["electrician","priority"]},
-      {title:"Planning and utility next steps", ids:["load","utility"]},
-      {title:"Immediate danger guidance", ids:["emergency"]}
-    ];
-    $("#report-groups").innerHTML = buckets.map(bucket => {
-      const count = entries.filter(entry => bucket.ids.includes(entry.outcome)).length;
-      return `<div class="${count ? "has-items" : ""}"><strong>${count}</strong><span>${bucket.title}</span></div>`;
-    }).join("");
+  function toggleDevice(id) {
+    const item = D.equipment.find(device => device.id === id);
+    if(item.era > eraIndex) return;
+    if(active.has(id)) active.delete(id); else active.add(id);
+    selectedScenario = null;
+    document.querySelectorAll("[data-scenario]").forEach(button => button.setAttribute("aria-pressed","false"));
+    $("#lab-scenario-label").textContent = "YOUR EVENING";
+    $("#lab-message").textContent = active.size ? "Your home changes as equipment overlaps." : "Tap equipment to build your evening.";
+    updateHouse();
   }
 
-  function showReport() {
-    const entries = answers.filter(Boolean);
-    setView("#report");
-    $("#report-count").textContent = entries.length;
-    $("#report-context").textContent = contextSentence();
-    $("#report-ring").style.setProperty("--report-progress", `${(entries.length / tourSignals.length) * 360}deg`);
-    renderOutcomeGroups(entries);
-    $("#report-list").innerHTML = entries.map(entry => {
-      const outcome = D.outcomes[entry.outcome];
-      const title = profile.role === "renter" && ["electrician","priority"].includes(entry.outcome)
-        ? "DOCUMENT & CONTACT YOUR LANDLORD"
-        : outcome.label;
-      return `<article class="${outcome.tone}">
-        <div><small>${entry.room}</small><h2>${entry.signal}</h2><p>${entry.answer}</p></div>
-        <span>${title}</span>
-      </article>`;
-    }).join("");
+  function applyScenario(id) {
+    const scenario = D.scenarios.find(item => item.id === id);
+    selectedScenario = scenario;
+    const allowed = new Set(D.eras[eraIndex].available);
+    active = new Set(scenario.active.filter(item => allowed.has(item)));
+    document.querySelectorAll("[data-scenario]").forEach(button => button.setAttribute("aria-pressed",String(button.dataset.scenario === id)));
+    $("#lab-scenario-label").textContent = scenario.name.toUpperCase();
+    $("#lab-message").textContent = scenario.message;
+    $("#lab-house").dataset.event = scenario.event;
+    updateHouse();
+    triggerEvent(scenario.event,scenario.name);
   }
 
-  function startTour(reset = false) {
-    if (reset) answers = [];
-    profile = {
-      era:$("#home-era").value,
-      role:$("#home-role").value,
-      area:$("#home-area").value
-    };
-    buildTour();
-    setView("#walkthrough");
-    loadSignal(0);
+  function setEra(nextIndex) {
+    eraIndex = Number(nextIndex);
+    const era = D.eras[eraIndex];
+    const allowed = new Set(era.available);
+    active = new Set([...active].filter(item => allowed.has(item)));
+    $("#era-copy").textContent = era.copy;
+    $("#lab-house").dataset.era = era.year.toLowerCase();
+    $("#era-ghosts").textContent = eraIndex < 3 ? `${8 - era.available.length} modern systems have not entered this home yet.` : "Today’s home can support more kinds of electrical life than ever before.";
+    updateAvailability();
+    updateHouse();
   }
 
-  function closeCard() {
-    $("#signal-card").hidden = true;
-    $("#signal-hotspot").focus();
+  function triggerEvent(eventId,source) {
+    if(seenEvents.has(eventId)) return;
+    seenEvents.add(eventId);
+    currentEvent = eventId;
+    eventSource = source;
+    const event = D.events[eventId];
+    $("#notice-title").textContent = event.title;
+    $("#notice-copy").textContent = event.copy;
+    $("#notice-options").hidden = false;
+    $("#notice-guidance").hidden = true;
+    $("#notice-card").hidden = false;
+    $("#lab-house").dataset.event = eventId;
+    $("#notice-close").focus();
   }
 
-  function wireDialog() {
+  function answerNotice(answer) {
+    const event = D.events[currentEvent];
+    const guidance = event[answer];
+    observations.push({event:currentEvent,source:eventSource,answer,label:guidance.label,title:guidance.title,copy:guidance.copy});
+    $("#notice-label").textContent = guidance.label;
+    $("#notice-guidance-title").textContent = guidance.title;
+    $("#notice-guidance-copy").textContent = guidance.copy;
+    $("#notice-options").hidden = true;
+    $("#notice-guidance").hidden = false;
+    $("#notice-continue").focus();
+  }
+
+  function closeNotice() {
+    $("#notice-card").hidden = true;
+    $("#lab-house").dataset.event = "none";
+  }
+
+  function buildStory() {
+    const score = activityScore();
+    const era = D.eras[eraIndex];
+    const items = D.equipment.filter(item => active.has(item.id));
+    $("#story-activity").textContent = score;
+    $("#story-summary").textContent = `${era.year} view · ${items.length} active system${items.length === 1 ? "" : "s"} · ${selectedScenario ? selectedScenario.name : "your custom evening"}. These are the conditions you explored—not findings about a property.`;
+    $("#story-devices").innerHTML = items.length ? items.map(item => `<span><i>${item.icon}</i>${item.name}</span>`).join("") : "<p>No equipment was left active. Return to the lab to build an evening.</p>";
+    $("#story-observations").innerHTML = observations.length ? observations.map(item => `
+      <article>
+        <div><small>${item.source}</small><h2>${D.events[item.event].title}</h2><p>${item.copy}</p></div>
+        <span>${item.label}</span>
+      </article>`).join("") : `<article><div><small>YOUR EXPLORATION</small><h2>No home moments were saved yet.</h2><p>Try a Houston scenario or activate several major systems, then answer “Does this happen in your home?”</p></div><span>KEEP EXPLORING</span></article>`;
+    setView("#power-story");
+  }
+
+  function resetLab() {
+    eraIndex = 3;
+    active.clear();
+    observations = [];
+    selectedScenario = null;
+    seenEvents.clear();
+    $("#era-slider").value = "3";
+    document.querySelectorAll("[data-scenario]").forEach(button => button.setAttribute("aria-pressed","false"));
+    $("#lab-scenario-label").textContent = "YOUR EVENING";
+    $("#lab-message").textContent = "Tap equipment to build your evening.";
+    setEra(3);
+    closeNotice();
+  }
+
+  function wireSafety() {
     const dialog = $("#safety-dialog");
-    $("#safety-open").addEventListener("click", () => dialog.showModal());
-    $("#safety-close").addEventListener("click", () => dialog.close());
-    dialog.addEventListener("click", event => {
-      if (event.target === dialog) dialog.close();
-    });
+    $("#safety-open").addEventListener("click",() => dialog.showModal());
+    $("#safety-close").addEventListener("click",() => dialog.close());
+    dialog.addEventListener("click",event => {if(event.target === dialog) dialog.close();});
   }
 
   function init() {
-    $("#enter-home").addEventListener("click", () => setView("#intake"));
-    $("#intake-back").addEventListener("click", () => setView("#welcome"));
-    document.querySelectorAll("#concern-options button").forEach(button => {
-      button.addEventListener("click", () => chooseConcern(button));
+    renderScenarios();
+    renderEquipment();
+    setEra(3);
+    $("#power-on").addEventListener("click",() => setView("#lab-stage"));
+    $("#era-slider").addEventListener("input",event => setEra(event.target.value));
+    $("#xray-toggle").addEventListener("click",() => {
+      const next = $("#lab-house").dataset.xray !== "true";
+      $("#lab-house").dataset.xray = String(next);
+      $("#xray-toggle").setAttribute("aria-pressed",String(next));
+      $("#xray-toggle").lastChild.textContent = next ? " Hide electrical X-ray" : " See behind the walls";
     });
-    $("#begin-walkthrough").addEventListener("click", () => startTour(true));
-    $("#signal-hotspot").addEventListener("click", openSignal);
-    $("#card-close").addEventListener("click", closeCard);
-    $("#continue-tour").addEventListener("click", () => {
-      if (index < tourSignals.length - 1) loadSignal(index + 1);
-      else showReport();
-    });
-    $("#exit-tour").addEventListener("click", () => setView("#intake"));
-    $("#restart-tour").addEventListener("click", () => setView("#intake"));
-    $("#print-report").addEventListener("click", () => window.print());
-    wireDialog();
+    $("#notice-close").addEventListener("click",closeNotice);
+    $("#notice-continue").addEventListener("click",closeNotice);
+    $("#notice-options").querySelectorAll("button").forEach(button => button.addEventListener("click",() => answerNotice(button.dataset.answer)));
+    $("#finish-lab").addEventListener("click",buildStory);
+    $("#back-to-lab").addEventListener("click",() => setView("#lab-stage"));
+    $("#restart-lab").addEventListener("click",() => {resetLab();setView("#lab-stage");});
+    $("#reset-lab").addEventListener("click",resetLab);
+    wireSafety();
   }
 
-  document.readyState === "loading"
-    ? document.addEventListener("DOMContentLoaded", init)
-    : init();
+  document.readyState === "loading" ? document.addEventListener("DOMContentLoaded",init) : init();
 })();
