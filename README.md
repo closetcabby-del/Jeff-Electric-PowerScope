@@ -1,17 +1,16 @@
-# Jeff Electric PowerScope
+# Jeff Electric HomeScope
 
-A polished, mobile-first educational experience for Houston and Southeast Houston homeowners.
+A polished, mobile-first virtual electrical walkthrough for homeowners.
 
 ## What it includes
 
-- Interactive Leaflet map with six supported ZIP codes and four educational data layers
-- Electrical-era timeline
-- Public-data visualizations sourced from EIA, USFA and ERCOT
-- Illustrative Modern Power Readiness selector
-- Safety-first, one-question-at-a-time symptom checker
-- Accessible methodology dialog, keyboard controls and reduced-motion support
+- Eight-room virtual home with interactive electrical objects and appliances
+- Safe homeowner observations only—no tools, disassembly or energized testing
+- One-question-at-a-time guidance for routine, appliance, utility, electrician, load-planning and emergency outcomes
+- Persistent homeowner awareness list with reset support
+- Keyboard-accessible controls, dialogs, large mobile tap targets and reduced-motion support
 
-PowerScope never claims to inspect or diagnose a property. Its regional overlays and readiness points are explicitly educational.
+HomeScope never claims to inspect, diagnose or determine the safety or capacity of a property.
 
 ## Run locally
 
@@ -33,13 +32,8 @@ The included workflow publishes the static site automatically on every push to `
 
 The expected URL is `https://closetcabby-del.github.io/Jeff-Electric-PowerScope/`.
 
-## Data
+## Safety and methodology
 
-Exact displayed values and retrieval notes are in `data.js`. Sources:
+Guidance is intentionally limited to visible, homeowner-safe observations. The experience never instructs a visitor to remove a panel or outlet cover, touch exposed wiring, test live equipment or perform electrical work.
 
-- [U.S. Energy Information Administration](https://www.eia.gov/electricity/sales_revenue_price/)
-- [U.S. Fire Administration](https://www.usfa.fema.gov/statistics/)
-- [ERCOT yearly peak demand records](https://www.ercot.com/static-assets/data/news/content/a-peak-demand/all-time-records.htm)
-- [U.S. Census American Community Survey](https://data.census.gov/)
-
-Map tiles are provided by OpenStreetMap and rendered through Leaflet. If tiles are unavailable, the page retains a styled geographic fallback.
+Active smoke, fire, arcing, shock near water, downed lines or immediate danger routes the visitor to leave the area and call 911. The educational guide does not replace emergency services, a utility, appliance service or a licensed electrician.
