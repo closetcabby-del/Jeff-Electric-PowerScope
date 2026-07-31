@@ -31,7 +31,7 @@ The included workflow publishes the static site automatically on every push to `
 2. Under **Build and deployment**, choose **GitHub Actions** as the source.
 3. Run the `Deploy static site to Pages` workflow if it does not start automatically.
 
-The expected URL is `https://josh986.github.io/Jeff/`.
+The expected URL is `https://closetcabby-del.github.io/Jeff-Electric-PowerScope/`.
 
 ## Data
 
