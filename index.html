@@ -4,100 +4,105 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#08090b">
-  <meta name="description" content="Explore Southeast Houston housing eras and electrical context by ZIP with Jeff Electric PowerScope.">
-  <meta property="og:title" content="Jeff Electric PowerScope">
-  <meta property="og:description" content="An interactive Southeast Houston electrical-era map.">
+  <meta name="description" content="Take a safe, interactive electrical walkthrough of a virtual home with Jeff Electric HomeScope.">
+  <meta property="og:title" content="Jeff Electric HomeScope">
+  <meta property="og:description" content="A homeowner’s interactive guide to the electrical equipment around the home.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/social-card.svg">
-  <title>PowerScope Map | Jeff Electric</title>
+  <title>HomeScope | Jeff Electric</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3ynJb+8nD3Y6pbgOL9MZbMFTMN1gM=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=map-only-1">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
-  <script src="data.js?v=map-only-1" defer></script>
-  <script src="app.js?v=map-only-1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=home-walkthrough-1">
+  <script src="data.js?v=home-walkthrough-1" defer></script>
+  <script src="app.js?v=home-walkthrough-1" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#location-input">Skip to map search</a>
-  <main class="map-app">
-    <div id="map" aria-label="Interactive map of Southeast Houston ZIP-code electrical context"></div>
-    <div class="map-fallback" aria-hidden="true"><span>HOU</span></div>
-    <div class="scanline" aria-hidden="true"></div>
-
+  <a class="skip-link" href="#room-nav">Skip to room navigation</a>
+  <main class="home-app">
     <header class="topbar glass">
-      <a class="brand" href="./" aria-label="Jeff Electric PowerScope home">
+      <a class="brand" href="./" aria-label="Jeff Electric HomeScope home">
         <span class="brand-bolt" aria-hidden="true">ϟ</span>
-        <span><strong>JEFF ELECTRIC</strong><small>POWERSCOPE / SE HOUSTON</small></span>
+        <span><strong>JEFF ELECTRIC</strong><small>HOMESCOPE / SAFE WALKTHROUGH</small></span>
       </a>
-      <button class="method-button" id="method-open" type="button">Data &amp; Methodology</button>
+      <div class="top-actions">
+        <button id="safety-open" class="quiet-button" type="button">Safety rules</button>
+        <button id="summary-open" class="summary-button" type="button"><span id="reviewed-count">0</span> reviewed</button>
+      </div>
     </header>
 
-    <section class="map-intro glass" aria-labelledby="map-title">
-      <p class="eyebrow">INTERACTIVE ELECTRICAL-ERA MAP</p>
-      <h1 id="map-title">Explore Southeast Houston.</h1>
-      <p>Hover over a highlighted ZIP—or tap on mobile—to see housing-era data and electrical screening context.</p>
-      <form id="location-form" role="search">
-        <label for="location-input">Fly to your area</label>
-        <div class="search-control">
-          <input id="location-input" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code" aria-describedby="search-status">
-          <button type="submit" aria-label="Search supported ZIP code">Explore <span aria-hidden="true">→</span></button>
-        </div>
-        <p id="search-status" role="status" aria-live="polite">77502 · 77058 · 77581 · 77546 · 77598 · 77002</p>
-      </form>
+    <section class="intro-panel glass">
+      <p class="eyebrow">A HOMEOWNER’S INTERACTIVE GUIDE</p>
+      <h1>Walk through your home.</h1>
+      <p>Choose a room, tap the glowing objects and learn what to notice—without tools, disassembly or live testing.</p>
+      <div class="safety-strip"><span aria-hidden="true">✓</span> Observe only. Never open covers or touch wiring.</div>
     </section>
 
-    <aside class="layer-panel glass" aria-label="Map data layers">
-      <span>MAP VIEW</span>
-      <div id="layer-controls" role="group" aria-label="Select a map layer"></div>
+    <nav class="room-nav glass" id="room-nav" aria-label="Virtual home rooms"></nav>
+
+    <section class="scene-shell" aria-live="polite">
+      <div class="scene-heading">
+        <div><p class="eyebrow" id="room-step">ROOM 1 OF 8</p><h2 id="room-title"></h2></div>
+        <p id="room-intro"></p>
+      </div>
+      <div class="room-scene" id="room-scene" role="group" aria-label="Interactive objects in the selected room">
+        <div class="scene-grid" aria-hidden="true"></div>
+        <div class="room-architecture" aria-hidden="true">
+          <i class="wall-line one"></i><i class="wall-line two"></i>
+          <div class="window"><span></span><span></span></div>
+          <div class="floor-shadow"></div>
+        </div>
+        <div id="object-layer"></div>
+        <div class="scene-prompt"><span class="pulse-dot"></span> Select a glowing object</div>
+      </div>
+      <div class="room-controls">
+        <button id="previous-room" type="button">← Previous room</button>
+        <div class="walk-progress" aria-label="Walkthrough room progress"><i id="walk-progress"></i></div>
+        <button id="next-room" type="button">Next room →</button>
+      </div>
+    </section>
+
+    <aside class="learn-panel glass" id="learn-panel" aria-labelledby="learn-title" hidden>
+      <div class="panel-head">
+        <span id="learn-kicker">HOME OBJECT</span>
+        <button id="learn-close" type="button" aria-label="Close learning panel">×</button>
+      </div>
+      <div class="object-heading"><span id="learn-icon" aria-hidden="true"></span><div><h2 id="learn-title"></h2><p id="learn-normal"></p></div></div>
+      <div class="look-list"><h3>What to look after</h3><ul id="learn-look"></ul></div>
+      <div class="observation" id="observation">
+        <h3 id="learn-question"></h3>
+        <div id="answer-list"></div>
+      </div>
+      <div class="guidance" id="guidance" hidden>
+        <span id="result-label"></span>
+        <h3 id="result-title"></h3>
+        <p id="result-copy"></p>
+        <button id="answer-again" type="button">Choose another observation</button>
+      </div>
     </aside>
 
-    <article class="map-card glass" id="map-card" aria-live="polite" hidden>
-      <div class="card-head">
-        <span id="card-kicker">ZIP PROFILE</span>
-        <button id="card-close" type="button" aria-label="Close ZIP profile">×</button>
-      </div>
-      <h2 id="card-title"></h2>
-      <strong id="card-era"></strong>
-      <p class="housing" id="card-housing"></p>
-      <small id="card-sample"></small>
-      <div class="profile-block">
-        <span>LIKELY SERVICE-ERA PATTERNS</span>
-        <p id="card-panel"></p>
-      </div>
-      <div class="profile-block">
-        <span>CODE CONTEXT FOR NEW WORK</span>
-        <p id="card-code"></p>
-      </div>
-      <div class="profile-block">
-        <span>PROFESSIONAL SCREENING TOPICS</span>
-        <ul id="card-hazards"></ul>
-      </div>
-      <p class="disclaimer" id="card-copy"></p>
-      <small class="notice">Regional educational context—not a property record, inspection or diagnosis.</small>
-    </article>
-
-    <div class="map-legend glass">
-      <i></i><span>Interactive ZIP coverage</span>
-      <small>MAP © OPENSTREETMAP · ZCTA GEOMETRY © U.S. CENSUS</small>
-    </div>
+    <div class="brand-corner">WIRING TOMORROW, TODAY</div>
   </main>
 
-  <dialog id="method-dialog" aria-labelledby="method-title">
-    <div class="dialog-head">
-      <div><p class="eyebrow">TRANSPARENCY</p><h2 id="method-title">Data &amp; Methodology</h2></div>
-      <button id="method-close" type="button" aria-label="Close dialog">×</button>
-    </div>
+  <dialog id="safety-dialog" aria-labelledby="safety-title">
+    <div class="dialog-head"><div><p class="eyebrow">BEFORE YOU BEGIN</p><h2 id="safety-title">Observe. Don’t investigate.</h2></div><button id="safety-close" aria-label="Close safety rules">×</button></div>
     <div class="dialog-body">
-      <p>Housing-year percentages use the 2020–2024 American Community Survey 5-year estimate, table B25034. ZIP shapes are Census-derived ZCTAs, which approximate postal areas and are not parcel boundaries.</p>
-      <p>The ACS does not report panel brands, service sizes, wiring methods or defects. Panel notes are cautious era-linked possibilities for a licensed electrician to verify—not findings about a home.</p>
-      <ul>
-        <li><a href="https://data.census.gov/" target="_blank" rel="noopener">U.S. Census American Community Survey</a></li>
-        <li><a href="https://www.tdlr.texas.gov/electricians/compliance-guide.htm" target="_blank" rel="noopener">Texas TDLR — 2023 NEC minimum standard</a></li>
-        <li><a href="https://www.pearlandtx.gov/departments/community-development/permits/adopted-building-codes" target="_blank" rel="noopener">City of Pearland — adopted codes</a></li>
-        <li><a href="https://www.cityofwebster.com/232/Building-Division" target="_blank" rel="noopener">City of Webster — adopted codes</a></li>
+      <ul class="rule-list">
+        <li>Never remove an electrical panel or outlet cover.</li>
+        <li>Never touch exposed wiring or test live equipment.</li>
+        <li>Never disassemble an outlet, switch or appliance connection.</li>
+        <li>Stay away from downed lines, damaged meters and water near energized equipment.</li>
       </ul>
-      <p><strong>Safety:</strong> Active smoke, fire or immediate danger requires leaving the area and calling 911. This map never replaces emergency services, a utility or a licensed electrician.</p>
+      <p><strong>Active smoke, fire, arcing or immediate danger:</strong> leave the area and call 911. This guide does not replace emergency services, a utility or a licensed electrician.</p>
+    </div>
+  </dialog>
+
+  <dialog id="summary-dialog" aria-labelledby="summary-title">
+    <div class="dialog-head"><div><p class="eyebrow">YOUR WALKTHROUGH</p><h2 id="summary-title">Home awareness list</h2></div><button id="summary-close" aria-label="Close walkthrough summary">×</button></div>
+    <div class="dialog-body">
+      <div class="summary-progress"><strong id="summary-total">0</strong><span>objects reviewed</span></div>
+      <div id="summary-list" class="summary-list"></div>
+      <p class="summary-empty" id="summary-empty">Explore the home and answer an observation question to start your list.</p>
+      <button id="summary-reset" class="reset-button" type="button">Restart walkthrough</button>
+      <small>This is an educational record of your selections—not an inspection, diagnosis, safety determination or electrical load calculation.</small>
     </div>
   </dialog>
 </body>
