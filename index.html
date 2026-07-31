@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#08090b">
+  <meta name="description" content="Explore Houston's electrical history and modern home power readiness with Jeff Electric PowerScope.">
+  <meta property="og:title" content="Jeff Electric PowerScope">
+  <meta property="og:description" content="Explore your home's electrical past. Prepare it for what comes next.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/social-card.svg">
+  <title>PowerScope | Jeff Electric</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3ynJb+8nD3Y6pbgOL9MZbMFTMN1gM=" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#story">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Jeff Electric PowerScope home">
+      <span class="brand-bolt" aria-hidden="true">ϟ</span>
+      <span><strong>JEFF ELECTRIC</strong><small>WIRING TOMORROW, TODAY</small></span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#story">History</a><a href="#readiness">Readiness</a>
+      <button class="text-button" data-open-method>Data &amp; Methodology</button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="map-hero" aria-labelledby="hero-title">
+      <div id="map" aria-label="Interactive map of Houston and Southeast Houston electrical context"></div>
+      <div class="map-fallback" aria-hidden="true"><span>HOU</span><i></i><i></i><i></i></div>
+      <div class="scanline" aria-hidden="true"></div>
+      <div class="hero-copy glass">
+        <p class="eyebrow"><span></span> POWERSCOPE / HOUSTON</p>
+        <h1 id="hero-title">Was your home built <em>for today?</em></h1>
+        <p>Explore how Houston homes, energy costs and modern electrical demands have changed.</p>
+        <form id="location-form" role="search">
+          <label for="location-input">Fly to your area</label>
+          <div class="search-control">
+            <input id="location-input" name="location" inputmode="numeric" autocomplete="postal-code" placeholder="Enter a supported ZIP" aria-describedby="location-help">
+            <button type="submit" aria-label="Search supported ZIP code">Explore <span aria-hidden="true">→</span></button>
+          </div>
+          <small id="location-help">Try 77502, 77058, 77581, 77546, 77598 or 77002.</small>
+          <p id="search-status" class="status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="layer-panel glass" aria-label="Map data layers">
+        <p>DATA LAYERS</p>
+        <div id="layer-controls" role="group" aria-label="Select a map layer"></div>
+      </div>
+      <article class="map-card glass" id="map-card" aria-live="polite">
+        <div class="map-card-top"><span id="map-card-kicker">REGIONAL CONTEXT</span><span class="live-dot">LIVE VIEW</span></div>
+        <h2 id="map-card-title">Houston Power Landscape</h2>
+        <strong id="map-card-stat">A city built across many electrical eras</strong>
+        <p id="map-card-copy">Choose a data layer or fly to a supported ZIP to explore broad regional and construction-era context.</p>
+        <small>Educational regional context—not property-level records, an inspection or a diagnosis.</small>
+        <a class="primary-button" href="#readiness">Modern Power Readiness <span>↓</span></a>
+      </article>
+      <div class="map-attribution">MAP DATA © OPENSTREETMAP CONTRIBUTORS · REGIONAL CONTEXT</div>
+      <a class="scroll-cue" href="#story"><span>SCROLL TO EXPLORE</span><i aria-hidden="true"></i></a>
+    </section>
+
+    <section class="story section" id="story">
+      <div class="section-heading">
+        <p class="eyebrow">THE ELECTRICAL ERA</p>
+        <h2>Homes changed.<br><em>Power followed.</em></h2>
+        <p>Household electrical life expanded from a few major appliances to always-on technology, transportation and resilience systems.</p>
+      </div>
+      <div class="timeline-layout">
+        <div class="era-tabs" role="tablist" aria-label="Electrical eras"></div>
+        <article class="era-card glass">
+          <div class="service-meter" aria-label="General educational service-era context">
+            <svg viewBox="0 0 160 160" aria-hidden="true">
+              <circle class="meter-track" cx="80" cy="80" r="65"></circle>
+              <circle class="meter-value" cx="80" cy="80" r="65"></circle>
+            </svg>
+            <div><strong id="era-service">100A</strong><span>COMMON ERA<br>CONTEXT</span></div>
+          </div>
+          <div>
+            <p class="eyebrow" id="era-kicker">1970s / FOUNDATIONAL LOAD</p>
+            <h3 id="era-title">Comfort becomes electric.</h3>
+            <p id="era-copy"></p>
+            <div id="era-loads" class="chip-list"></div>
+          </div>
+        </article>
+      </div>
+      <blockquote>“Your panel may be powering a life it was never designed to imagine.”</blockquote>
+      <p class="fine-print">Service values are general educational context only—not a determination of any home's service size, capacity or condition.</p>
+    </section>
+
+    <section class="data-section section" id="data">
+      <div class="section-heading compact">
+        <p class="eyebrow">SIGNALS THROUGH TIME</p>
+        <h2>Three views of a changing <em>power landscape.</em></h2>
+      </div>
+      <div class="data-grid">
+        <article class="data-card glass chart-card">
+          <div class="card-number">01</div>
+          <p class="eyebrow">PRICE / TEXAS</p>
+          <h3>Residential electricity prices</h3>
+          <p>Annual average revenue per kWh, Texas residential sector.</p>
+          <div class="chart-wrap"><svg id="price-chart" viewBox="0 0 520 230" role="img" aria-labelledby="price-chart-title"><title id="price-chart-title">Texas residential electricity price trend, 2015 to 2024</title></svg></div>
+          <div class="chart-meta"><span>2015</span><strong>cents / kWh</strong><span>2024</span></div>
+          <small>Source: EIA Form EIA-861. Nominal annual averages; 2024 final.</small>
+        </article>
+        <article class="data-card glass fire-card">
+          <div class="card-number">02</div>
+          <p class="eyebrow">SAFETY / UNITED STATES</p>
+          <h3>Residential electrical fires</h3>
+          <div class="big-stat"><strong>7.7%</strong><span>of U.S. residential building fires</span></div>
+          <div class="bar"><i style="width:7.7%"></i></div>
+          <p>USFA's 2024 estimate attributes 7.7% of residential building fires nationally to electrical malfunction.</p>
+          <small>A national statistic cannot predict risk for an individual house.</small>
+        </article>
+        <article class="data-card glass grid-card">
+          <div class="card-number">03</div>
+          <p class="eyebrow">DEMAND / ERCOT</p>
+          <h3>Yearly peak demand</h3>
+          <div class="big-stat"><strong>85,508</strong><span>MW · 2023 record in selected history</span></div>
+          <div class="mini-bars" id="demand-bars" aria-label="Selected historical ERCOT yearly peak demand records"></div>
+          <p>Selected real system-wide peak records show the direction of grid demand—not local outage frequency.</p>
+          <small>Historical ERCOT peaks. Grid generation events and local utility outages are different.</small>
+        </article>
+      </div>
+      <button class="method-link" data-open-method>View Data &amp; Methodology <span>↗</span></button>
+    </section>
+
+    <section class="readiness section" id="readiness">
+      <div class="section-heading">
+        <p class="eyebrow">MODERN POWER READINESS</p>
+        <h2>Build your <em>modern home.</em></h2>
+        <p>Select the equipment your home uses—or may use next. The score is illustrative and is not an NEC load calculation or service-sizing result.</p>
+      </div>
+      <div class="readiness-layout">
+        <div class="load-grid" id="load-grid"></div>
+        <aside class="readiness-meter glass">
+          <p class="eyebrow">ILLUSTRATIVE DEMAND</p>
+          <div class="gauge">
+            <svg viewBox="0 0 220 130" aria-hidden="true">
+              <path class="gauge-track" d="M25 110 A85 85 0 0 1 195 110"></path>
+              <path class="gauge-value" d="M25 110 A85 85 0 0 1 195 110"></path>
+            </svg>
+            <div><strong id="readiness-score">0</strong><span>/ 100</span></div>
+          </div>
+          <h3 id="readiness-title">Start with your home</h3>
+          <p id="readiness-copy">Add major equipment to see how modern electrical demands can accumulate.</p>
+          <small><span id="selected-count">0</span> systems selected · illustrative points only</small>
+          <button id="reset-loads" class="secondary-button">Reset selections</button>
+        </aside>
+      </div>
+      <div class="safety-note"><span aria-hidden="true">ⓘ</span><p><strong>A real load calculation is different.</strong> A licensed electrician uses equipment ratings, demand factors and applicable code—not this educational score—to evaluate service needs.</p></div>
+    </section>
+
+    <section class="checker section" id="checker">
+      <div class="checker-shell glass">
+        <div class="checker-intro">
+          <p class="eyebrow">A CALM FIRST STEP</p>
+          <h2>Do I even need <em>an electrician?</em></h2>
+          <p>Answer a few questions using only what you can safely observe. Never remove a cover, touch wiring or test anything live.</p>
+          <div class="safe-rule"><span>✓</span> No tools. No disassembly. No energized work.</div>
+        </div>
+        <div class="checker-app">
+          <div class="progress-row"><span id="checker-step">STEP 1 OF 3</span><div class="progress"><i id="checker-progress"></i></div></div>
+          <div id="checker-content" tabindex="-1"></div>
+          <div class="checker-nav">
+            <button id="checker-back" class="text-button">← Back</button>
+            <button id="checker-restart" class="text-button">Restart ↻</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing section">
+      <p class="eyebrow">JEFF ELECTRIC</p>
+      <h2>See the past.<br><em>Plan what’s next.</em></h2>
+      <p>PowerScope helps you ask better questions. A professional assessment helps turn those questions into a plan.</p>
+      <a class="primary-button" href="#checker">Start the symptom checker <span>→</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand"><span class="brand-bolt">ϟ</span><span><strong>JEFF ELECTRIC</strong><small>WIRING TOMORROW, TODAY</small></span></div>
+    <p>Houston &amp; Southeast Houston · Educational experience only</p>
+    <button class="text-button" data-open-method>Data &amp; Safety</button>
+    <small>© <span id="year"></span> Jeff Electric. PowerScope does not inspect, diagnose or determine the safety or capacity of any property.</small>
+  </footer>
+
+  <dialog id="method-dialog" aria-labelledby="method-title">
+    <div class="dialog-head"><div><p class="eyebrow">TRANSPARENCY</p><h2 id="method-title">Data &amp; Methodology</h2></div><button id="method-close" aria-label="Close dialog">×</button></div>
+    <div class="dialog-body">
+      <p>PowerScope combines published public statistics with clearly labeled regional educational context. It does not use parcel records, inspect a home or make a property-level finding.</p>
+      <h3>Primary sources</h3>
+      <ul>
+        <li><a href="https://www.eia.gov/electricity/sales_revenue_price/" target="_blank" rel="noopener">U.S. Energy Information Administration — Electric Sales, Revenue and Average Price</a></li>
+        <li><a href="https://www.usfa.fema.gov/statistics/" target="_blank" rel="noopener">U.S. Fire Administration — Residential Building Fire Causes</a></li>
+        <li><a href="https://www.ercot.com/static-assets/data/news/content/a-peak-demand/all-time-records.htm" target="_blank" rel="noopener">ERCOT — Yearly Peak Demand Records</a></li>
+        <li><a href="https://data.census.gov/" target="_blank" rel="noopener">U.S. Census American Community Survey</a></li>
+      </ul>
+      <h3>How to read this experience</h3>
+      <p>Map overlays are illustrative regional visualizations around supported ZIP centroids. Home-age notes describe broad community development patterns, not ACS parcel-level values. Storm markers are historical regional context and do not represent a utility outage record. Readiness points are intentionally non-electrical units and must not be used to size service.</p>
+      <h3>Retrieval date</h3>
+      <p>Source pages and final annual data reviewed July 30, 2026. Exact chart values and citations are documented in <code>data.js</code>.</p>
+      <div class="safety-note"><span>!</span><p><strong>Safety first.</strong> Active smoke, fire or immediate danger requires leaving the area and calling 911. This online experience never replaces emergency services, your utility or a licensed electrician.</p></div>
+    </div>
+  </dialog>
+</body>
+</html>
