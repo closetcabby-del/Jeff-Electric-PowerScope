@@ -3,6 +3,16 @@
   const D = window.HOME_DATA;
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
+  const roomViews = {
+    electrical:{size:"190%",position:"4% 66%"},
+    kitchen:{size:"185%",position:"35% 66%"},
+    living:{size:"185%",position:"63% 66%"},
+    bath:{size:"225%",position:"47% 4%"},
+    bedroom:{size:"195%",position:"5% 3%"},
+    garage:{size:"185%",position:"96% 65%"},
+    outside:{size:"118%",position:"50% 100%"},
+    attic:{size:"190%",position:"95% 2%"}
+  };
   let roomIndex = 0;
   let activeItem = null;
   const review = new Map();
@@ -28,6 +38,8 @@
     $("#room-title").textContent = room.name;
     $("#room-intro").textContent = room.intro;
     $("#room-scene").dataset.tone = room.tone;
+    $("#room-scene").style.setProperty("--scene-size", roomViews[room.id].size);
+    $("#room-scene").style.setProperty("--scene-position", roomViews[room.id].position);
     $("#walk-progress").style.width = `${((roomIndex + 1) / D.rooms.length) * 100}%`;
     $$("#room-nav button").forEach((button, i) => button.setAttribute("aria-pressed", String(i === roomIndex)));
     $("#object-layer").innerHTML = room.items.map(item => `
